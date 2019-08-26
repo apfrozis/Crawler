@@ -9,21 +9,16 @@ var PAGE_URL = "matches.asp?matchday=4"; //"matches.asp?matchday=1" ;
 var START_URL = SITE_URL + PAGE_URL;
 
 
-crawl().then(function (games) {
-    debugger;
+crawl()
 
-});
-
-debugger;
-
-async function crawl() {
+function crawl() {
 
     // New page we haven't visited
-    var games = await visitPage(START_URL, null, function (gameNull, body) {
-
+    visitPage(START_URL, null, function (gameNull, body) {
+        var games = [];
         // Parse the document body
         var $ = cheerio.load(body);
-        var games = [];
+
 
         //para aceder aquanda da pagina maches.tomorrow
         //var c = $('#content').children('div')[0].children[1].children[3].children[3].children[0].children[1].children
@@ -41,20 +36,17 @@ async function crawl() {
                 linkLigaTrends = linkLiga.replace("latest", "trends");
                 var game = new Game(tableGames[i].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), "", linkLigaTrends)
                 games.push(game)
-                debugger;
-                // checkstatsGame(game);
+                checkstatsGame(game);
             }
 
 
             i++;
 
         }
-        return Promise.all();
     });
-    return Promise.all();
 }
 
-async function visitPage(url, game, callback) {
+function visitPage(url, game, callback) {
 
     // Make the request
     console.log("Visiting page " + url);
@@ -73,6 +65,7 @@ async function visitPage(url, game, callback) {
 
 
     });
+    console.log("Não esperou pela response do request")
 }
 
 
@@ -94,6 +87,7 @@ function checkstatsGame(game) {
                 try {
                     var teamName = $($($($tableStats[i]).children()[0]).children()[0])[0].children[0].data
                 } catch {
+                    console.log("Deu merda - validar porque deu este problema")
                     debugger;
                 }
                 console.log("Nome da equipa na tabela:" + teamName)
