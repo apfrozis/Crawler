@@ -55,17 +55,33 @@ function visitPage(url, game, callback) {
         console.log("Received answer: " + response);
         console.log("Error: " + error);
         if (error == null) {
+
+            //aqui nunca podes ter tipo isto
+            // if(error){
+            //     callback(a,b)
+            // }
+            // callback()
+            // Se tiveres erro isto vai entrar dentro do if chamar o callback e depois mais a baixo vai chamar o callback de novo
+            // vai chamar duas vezes o callback e vai rebentar-te com o codigo..
+
             if (response.statusCode !== 200) {
                 console.log("Error:" + error);
-                return;
+                //senhor aluno quando dá erro tens de propogar o erro para a função acima, no node  por convenção é sempre o primeiro 
+                //parametro no callback ou seja (err, data1, data2, .....)
+                callback( ("Error requesting data ", error))
+            }
+            else{
+                console.log('body is ', body)
+                callback(game, body);
             }
 
-            callback(game, body);
         }
 
 
     });
-    console.log("Não esperou pela response do request")
+    //nunca vai esperar porque o node corre sempre em single thread todas as chamadas sao assincronas
+    //tens de fazer sempre o codigo todo na respostas do callback
+    //console.log("Não esperou pela response do request")
 }
 
 
