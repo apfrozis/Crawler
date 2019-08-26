@@ -35,6 +35,7 @@ function crawl() {
             if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa")) {
                 linkLigaTrends = linkLiga.replace("latest", "trends");
                 var game = new Game(tableGames[i].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), "", linkLigaTrends)
+                console.log('game ', game)
                 games.push(game)
                 checkstatsGame(game);
             }
@@ -71,7 +72,7 @@ function visitPage(url, game, callback) {
                 callback( ("Error requesting data ", error))
             }
             else{
-                console.log('body is ', body)
+                //console.log('body is ', body)
                 callback(game, body);
             }
 

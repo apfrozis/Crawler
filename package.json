@@ -5,6 +5,11 @@
     "main": "crawler.js",
     "author": "Stephen",
     "license": "ISC",
+    "scripts": {
+        "prestart": "npm install",
+        "start": "node crawler.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
     "dependencies": {
         "cheerio": "^0.22.0",
         "jquery": "^3.4.1",
