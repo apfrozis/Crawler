@@ -26,9 +26,9 @@ function crawl() {
 
         for (var i = 0; i < tableGames.length; i++) {
             var $tableChild = $(tableGames[i]);
-            var $ligaElemento = $($tableChild.prevAll('.trow2'))
+            var $ligaElemento = $($tableChild.prevAll('.parent'))
             if ($ligaElemento.length == 0) {
-                $ligaElemento = $($tableChild.prevAll().find('.trow2'))
+                $ligaElemento = $($tableChild.prevAll().find('.parent'))
             }
             var linkLigaTrends = "";
             var linkLiga = $ligaElemento.find('a')[0].attribs.href
@@ -95,7 +95,7 @@ function checkstatsGame(game) {
         var $ = cheerio.load(body);
 
         //var c = $('#content').children('div')[0].children[1].children[3].children[3].children[0].children[1].children
-        var tableGamesStats = $($($('.eight')[0]).children()[0]).find('table')
+        var tableGamesStats = $('.sortable')
 
         for (var j = 0; j < tableGamesStats.length; j++) {
             var $tableStats = $($(tableGamesStats[j]).find('.trow8'))
@@ -115,10 +115,15 @@ function checkstatsGame(game) {
                     //falta ciclo que corre pelas tds
 
                     for (var f = 1; f < $($tableStats[i]).children().length; f++) {
-                        if (f == 2 || f == 5) {
-                            equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
-                        } else {
+                        try {
                             equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].data)
+
+                        } catch {
+                            try {
+                                equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
+                            } catch {
+                                debugger;
+                            }
                         }
 
                     }
@@ -130,10 +135,15 @@ function checkstatsGame(game) {
                 } else if (game.equipaFora.nomeEquipa == teamName) {
                     var equipaInfo = [];
                     for (var f = 1; f < $($tableStats[i]).children().length; f++) {
-                        if (f == 2 || f == 5) {
-                            equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
-                        } else {
+                        try {
                             equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].data)
+
+                        } catch {
+                            try {
+                                equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
+                            } catch {
+                                debugger;
+                            }
                         }
 
                     }
