@@ -138,18 +138,20 @@ function checkstatsGame(game) {
 
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
                             try {
-                                equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].data)
-
+                                equipaInfo.push($($($tableStats[i]).children()[f]).find('span')[0].children[0].data)
                             } catch {
                                 try {
-                                    equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
+                                    equipaInfo.push($($($tableStats[i]).children()[f]).find('b')[0].children[0].data)
                                 } catch {
-                                    debugger;
+                                    try {
+                                        equipaInfo.push($($($tableStats[i]).children()[f]).find('font')[0].children[0].data)
+                                    } catch {
+                                        debugger;
+                                    }
                                 }
                             }
 
                         }
-                        debugger;
                         equipaForaJogouForaEquipaCasaJogouCasa++;
                         colocarInformacaoEquipas(game.equipaCasa, j, equipaInfo);
 
@@ -158,13 +160,16 @@ function checkstatsGame(game) {
                         var equipaInfo = [];
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
                             try {
-                                equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].data)
-
+                                equipaInfo.push($($($tableStats[i]).children()[f]).find('span')[0].children[0].data)
                             } catch {
                                 try {
-                                    equipaInfo.push($($($($tableStats[i]).children()[f]).children()[0])[0].children[0].children[0].data)
+                                    equipaInfo.push($($($tableStats[i]).children()[f]).find('b')[0].children[0].data)
                                 } catch {
-                                    debugger;
+                                    try {
+                                        equipaInfo.push($($($tableStats[i]).children()[f]).find('font')[0].children[0].data)
+                                    } catch {
+                                        debugger;
+                                    }
                                 }
                             }
 
