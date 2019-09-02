@@ -8,6 +8,13 @@
             this.liga = liga;
             this.href = href;
         }
+
+        ligaEstatisticas(over15, over25, over35) {
+            this.over15 = over15;
+            this.over25 = over25;
+            this.over35 = over35;
+
+        }
     }
 
     // exports = Cat; // It will not work with `new Cat();`
