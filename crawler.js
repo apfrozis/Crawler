@@ -11,18 +11,8 @@ var START_URL = SITE_URL + PAGE_URL;
 var EventEmitter = require("events").EventEmitter;
 var numeroJogosDoDia = new EventEmitter();
 var numeroJogosDoDiaAnalisados = new EventEmitter();
-var games = new EventEmitter();
-
-
-numeroJogosDoDiaAnalisados.on('update', function () {
-    console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados.data)
-    console.log("Numero de lista de jogos:" + games.data.length)
-    console.log("Numero de jogos :" + numeroJogosDoDia.data)
-    if (numeroJogosDoDiaAnalisados.data == numeroJogosDoDia.data) {
-        debugger;
-        //if(game.equipaCasa)
-    }
-});
+var listaJogosAnalisados = new EventEmitter();
+var listaJogosCumpremCondicao = new EventEmitter();
 
 crawl()
 
@@ -30,7 +20,7 @@ function crawl() {
 
     // New page we haven't visited
     visitPage(START_URL, null, function (gameNull, body) {
-        games.data = [];
+        listaJogosAnalisados.data = [];
         // Parse the document body
         var $ = cheerio.load(body);
 
@@ -92,7 +82,7 @@ function visitPage(url, game, callback) {
             }
 
         } else {
-            debugger;
+            // debugger;
             callback(("Error: read ECONNRESET", error.toString()))
         }
 
@@ -138,13 +128,16 @@ function checkstatsGame(game) {
 
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
                             try {
-                                equipaInfo.push($($($tableStats[i]).children()[f]).find('span')[0].children[0].data)
+                                let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('span')[0].children[0].data
+                                equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                             } catch {
                                 try {
-                                    equipaInfo.push($($($tableStats[i]).children()[f]).find('b')[0].children[0].data)
+                                    let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('b')[0].children[0].data
+                                    equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                                 } catch {
                                     try {
-                                        equipaInfo.push($($($tableStats[i]).children()[f]).find('font')[0].children[0].data)
+                                        let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('font')[0].children[0].data
+                                        equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                                     } catch {
                                         debugger;
                                     }
@@ -160,13 +153,16 @@ function checkstatsGame(game) {
                         var equipaInfo = [];
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
                             try {
-                                equipaInfo.push($($($tableStats[i]).children()[f]).find('span')[0].children[0].data)
+                                let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('span')[0].children[0].data
+                                equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                             } catch {
                                 try {
-                                    equipaInfo.push($($($tableStats[i]).children()[f]).find('b')[0].children[0].data)
+                                    let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('b')[0].children[0].data
+                                    equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                                 } catch {
                                     try {
-                                        equipaInfo.push($($($tableStats[i]).children()[f]).find('font')[0].children[0].data)
+                                        let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('font')[0].children[0].data
+                                        equipaInfo.push(estatisticaDaTabela.replace('%', ''))
                                     } catch {
                                         debugger;
                                     }
@@ -208,12 +204,12 @@ function checkstatsGame(game) {
                 var over25 = $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data;
                 var over35 = $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data;
             }
-            game.ligaEstatisticas(over15, over25, over35);
+            game.ligaEstatisticas(over15.replace('%', ''), over25.replace('%', ''), over35.replace('%', ''));
 
             //problema - páginas como brazil 2 tem mais detalhes
 
 
-            games.data.push(game);
+            listaJogosAnalisados.data.push(game);
         }
         numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
         numeroJogosDoDiaAnalisados.emit('update');
@@ -231,3 +227,39 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
         equipa.informacaoFora(equipaInfo);
 
 }
+numeroJogosDoDiaAnalisados.on('update', function () {
+    console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados.data)
+    console.log("Numero de lista de jogos:" + listaJogosAnalisados.data.length)
+    console.log("Numero de jogos :" + numeroJogosDoDia.data)
+    if (numeroJogosDoDiaAnalisados.data == numeroJogosDoDia.data) {
+        let condicao1 = false;
+        let condicao2 = false;
+        let condicao3 = false;
+        listaJogosCumpremCondicao.data = [];
+        //para cada jogo/game
+        for (let i = 0; i < listaJogosAnalisados.data.length; i++) {
+
+            //Condição da equipa da casa ter média de golos superior à media de golos da liga
+            if (listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver15 >= listaJogosAnalisados.data[i].over15 && listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver25 >= listaJogosAnalisados.data[i].over25 && listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver35 >= listaJogosAnalisados.data[i].over35) {
+                //A mesma coisa para a equipa que joga fora
+                if (listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver15 >= listaJogosAnalisados.data[i].over15 && listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver25 >= listaJogosAnalisados.data[i].over25 && listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver35 >= listaJogosAnalisados.data[i].over35) {
+                    condicao1 = true;
+                }
+            }
+            //Condição da equipa da casa ter média de golos em jogos em casa superior à media de golos da liga
+            if (listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver15 >= listaJogosAnalisados.data[i].over15 && listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver25 >= listaJogosAnalisados.data[i].over25 && listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver35 >= listaJogosAnalisados.data[i].over35) {
+                condicao2 = true;
+            }
+            //Condição da equipa de fora ter média de golos em jogos fora superior à media de golos da liga
+            if (listaJogosAnalisados.data[i].equipaFora.awayMatchGoalOver15 >= listaJogosAnalisados.data[i].over15 && listaJogosAnalisados.data[i].equipaFora.awayMatchGoalOver25 >= listaJogosAnalisados.data[i].over25 && listaJogosAnalisados.data[i].equipaFora.awayMatchGoalOver35 >= listaJogosAnalisados.data[i].over35) {
+                condicao3 = true;
+            }
+
+            if (condicao1 == true && condicao2 == true && condicao3 == true) {
+                listaJogosCumpremCondicao.data.push(listaJogosAnalisados.data[i])
+            }
+        }
+        debugger;
+
+    }
+});
