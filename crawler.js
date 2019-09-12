@@ -13,6 +13,12 @@ var numeroJogosDoDia = new EventEmitter();
 var numeroJogosDoDiaAnalisados = new EventEmitter();
 var listaJogosAnalisados = new EventEmitter();
 var listaJogosCumpremCondicao = new EventEmitter();
+var analisaJogo = new EventEmitter();
+var listJogosCondicao15 = [];
+var listJogosCondicao25 = [];
+var listJogosCondicao35 = [];
+
+
 
 crawl()
 
@@ -210,9 +216,11 @@ function checkstatsGame(game) {
 
 
             listaJogosAnalisados.data.push(game);
+            analisaJogo.emit('processaJogoOver15', game);
         }
         numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
-        numeroJogosDoDiaAnalisados.emit('update');
+        //numeroJogosDoDiaAnalisados.emit('update');
+        //console.log('jogos acima de 15 ', listJogosCondicao15 )
     });
 
 
@@ -227,6 +235,48 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
         equipa.informacaoFora(equipaInfo);
 
 }
+
+analisaJogo.on('processaJogoOver15', function(game) {
+
+    console.log('Jogo :  ', game.equipaCasa.nomeEquipa , ' - ', game.equipaFora.nomeEquipa  );
+    console.log('totalHome15 ',game.equipaCasa.totalMatchGoalOver15, '  totalAway15 ',game.equipaFora.totalMatchGoalOver15);
+    console.log('homeOver15 ',game.equipaCasa.homeMatchGoalOver15);
+    console.log('awayOver15 ',game.equipaFora.homeMatchGoalOver15);
+
+
+    console.log('==========================')
+    console.log('==========================')
+
+
+
+    //Percent increase = [(new value - original value)/original value] * 100
+    let overPercentagemTotal15 = 0;
+    let overPercentagemHome15 = 0;
+    let overPercentagemAway15 = 0;
+
+    //to do calcular a percentagem que passa a mais da media da liga para as 3 condições!
+
+    //total da medida de golos total para over 15 tem de ser maior que a media da liga para a equipa da casa e a equipa fora.
+    if(game.equipaCasa.totalMatchGoalOver15 >  game.over15 && game.equipaFora.totalMatchGoalOver15 > game.over15 )
+    {
+        //calcular o incremento de percentagem e arrendondar a duas casas
+        overPercentagemTotal15 = Math.round( ((game.equipaCasa.totalMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
+        if(game.equipaCasa.homeMatchGoalOver15 >= game.over15){
+            overPercentagemHome15 = Math.round( ((game.equipaCasa.homeMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
+
+            if(game.equipaFora.awayMatchGoalOver15 >= game.over15)
+            {
+                overPercentagemAway15 = Math.round( ((game.equipaFora.awayMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
+                let media = (overPercentagemTotal15 + overPercentagemHome15 + overPercentagemAway15) / 3;
+                game.percAcimaMedia = media;
+                console.log(' $$$$ Jogo :  ', game.equipaCasa.nomeEquipa , ' - ', game.equipaFora.nomeEquipa , ' media acima ', media )
+                listJogosCondicao15.push(game)
+            }
+        }
+    }
+});
+
+
 numeroJogosDoDiaAnalisados.on('update', function () {
     console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados.data)
     console.log("Numero de lista de jogos:" + listaJogosAnalisados.data.length)

@@ -1,9 +1,10 @@
 
 
 let async = require('async')
-
 let jogos = [];
 let estatiscasLiga ;
+
+//hack net
 
 
 main(()=>{});
