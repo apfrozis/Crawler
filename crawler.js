@@ -13,8 +13,27 @@ var numeroJogosDoDia = new EventEmitter();
 var numeroJogosDoDiaAnalisados = new EventEmitter();
 var listaJogosAnalisados = new EventEmitter();
 var listaJogosCumpremCondicao = new EventEmitter();
+var response;
 
-crawl()
+
+var express = require('express');
+var app = express();
+
+app.get('/getstats/', function (req, res) {
+
+    response = res;
+    crawl();
+
+})
+
+var server = app.listen(8081, function () {
+   var host = server.address().address
+   var port = server.address().port
+   
+   console.log("Example app listening at http://%s:%s", host, port)
+})
+
+
 
 function crawl() {
 
@@ -259,7 +278,7 @@ numeroJogosDoDiaAnalisados.on('update', function () {
                 listaJogosCumpremCondicao.data.push(listaJogosAnalisados.data[i])
             }
         }
-        debugger;
+        response.send(listaJogosCumpremCondicao.data);
 
     }
 });
