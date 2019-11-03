@@ -17,23 +17,37 @@ var response;
 
 
 var express = require('express');
+var cors = require('cors');
+
+
+
 var app = express();
 
-app.get('/getstats/', function (req, res) {
+var corsOptions = {
+    origin: 'http://localhost:4200',
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }
 
-    response = res;
-    crawl();
+  app.options('*', cors()) 
+
+app.get('/getstats',cors(corsOptions), function (req, res) {
+    console.log("recebeu request")
+//    response = res;
+    res.json(new Game('equipa 1', 'equipa 2', 'liga', 'href'))
+    //crawl();
 
 })
 
-var server = app.listen(8081, function () {
+
+
+
+
+var server = app.listen(8080, function () {
    var host = server.address().address
    var port = server.address().port
    
    console.log("Example app listening at http://%s:%s", host, port)
 })
-
-
 
 function crawl() {
 
@@ -58,11 +72,13 @@ function crawl() {
             }
             var linkLigaTrends = "";
             var linkLiga = $ligaElemento.find('a')[0].attribs.href
-            if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa")) {
+            if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2")) {
                 linkLigaTrends = linkLiga.replace("latest", "trends");
                 var game = new Game(tableGames[i].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), "", linkLigaTrends)
                 console.log('game ', game)
                 checkstatsGame(game);
+            }else{
+                numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
             }
 
 
@@ -94,7 +110,7 @@ function visitPage(url, game, callback) {
                 console.log("Error:" + error);
                 //senhor aluno quando dá erro tens de propogar o erro para a função acima, no node  por convenção é sempre o primeiro 
                 //parametro no callback ou seja (err, data1, data2, .....)
-                callback(("Error requesting data ", error))
+                callback("Error requesting data", error)
             } else {
                 //console.log('body is ', body)
                 callback(game, body);
@@ -102,7 +118,7 @@ function visitPage(url, game, callback) {
 
         } else {
             // debugger;
-            callback(("Error: read ECONNRESET", error.toString()))
+            callback("Error: read ECONNRESET", error.toString())
         }
 
 
@@ -119,7 +135,7 @@ function checkstatsGame(game) {
 
     visitPage(SITE_URL + game.href, game, function (game, body) {
         console.log("--------------------------Next game---------------------------")
-        if (game.toString().includes("ECONNRESET")) {
+        if (game.toString().includes("ECONNRESET") || game.toString().includes("Error")) {
 
         } else {
             // Parse the document body
@@ -209,19 +225,24 @@ function checkstatsGame(game) {
             var over25 = "";
             var over35 = "";
             try {
-                console.log("Linha 39-1,5:" + $($($($('table')[39]).children()[0]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 39-2,5:" + $($($($('table')[39]).children()[1]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 39-3,5:" + $($($($('table')[39]).children()[2]).children()[4]).children()[0].children[0].data)
-                var over15 = $($($($('table')[39]).children()[0]).children()[4]).children()[0].children[0].data;
-                var over25 = $($($($('table')[39]).children()[1]).children()[4]).children()[0].children[0].data;
-                var over35 = $($($($('table')[39]).children()[2]).children()[4]).children()[0].children[0].data;
+                console.log("Table 46-1,5:" + $($($($('table')[46])[0])[0]).find('b')[1].children[0].data)
+                console.log("Table 46-2,5:" + $($($($('table')[46])[0])[0]).find('b')[3].children[0].data)
+                console.log("Table 46-3,5:" + $($($($('table')[46])[0])[0]).find('b')[5].children[0].data)
+                var over15 = $($($($('table')[46])[0])[0]).find('b')[1].children[0].data;
+                var over25 = $($($($('table')[46])[0])[0]).find('b')[3].children[0].data;
+                var over35 = $($($($('table')[46])[0])[0]).find('b')[5].children[0].data;
             } catch {
-                console.log("Linha 43-1,5:" + $($($($('table')[45]).children()[0]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 43-2,5:" + $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 43-3,5:" + $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data)
-                var over15 = $($($($('table')[45]).children()[0]).children()[4]).children()[0].children[0].data;
-                var over25 = $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data;
-                var over35 = $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data;
+                try{
+                console.log("Linha 43-1,5:" + $($($($('table')[40])[0])[0]).find('b')[1].children[0].data)
+                console.log("Linha 43-2,5:" + $($($($('table')[40])[0])[0]).find('b')[3].children[0].data)
+                console.log("Linha 43-3,5:" + $($($($('table')[40])[0])[0]).find('b')[5].children[0].data)
+                var over15 = $($($($('table')[40])[0])[0]).find('b')[1].children[0].data;
+                var over25 = $($($($('table')[40])[0])[0]).find('b')[3].children[0].data;
+                var over35 = $($($($('table')[40])[0])[0]).find('b')[5].children[0].data;
+                }
+                catch{
+                   // debugger;
+                }
             }
             game.ligaEstatisticas(over15.replace('%', ''), over25.replace('%', ''), over35.replace('%', ''));
 
@@ -248,7 +269,7 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
 }
 numeroJogosDoDiaAnalisados.on('update', function () {
     console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados.data)
-    console.log("Numero de lista de jogos:" + listaJogosAnalisados.data.length)
+    console.log("Numero de lista de jogos com resultados:" + listaJogosAnalisados.data.length)
     console.log("Numero de jogos :" + numeroJogosDoDia.data)
     if (numeroJogosDoDiaAnalisados.data == numeroJogosDoDia.data) {
         let condicao1 = false;
@@ -278,7 +299,6 @@ numeroJogosDoDiaAnalisados.on('update', function () {
                 listaJogosCumpremCondicao.data.push(listaJogosAnalisados.data[i])
             }
         }
-        response.send(listaJogosCumpremCondicao.data);
-
+       // response.send(listaJogosCumpremCondicao.data);
     }
 });
