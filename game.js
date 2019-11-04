@@ -13,7 +13,6 @@
             this.over15 = over15;
             this.over25 = over25;
             this.over35 = over35;
-
         }
     }
 
