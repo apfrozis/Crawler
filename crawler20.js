@@ -3,18 +3,19 @@ var cheerio = require('cheerio');
 var URL = require('url-parse');
 const Game = require('./game');
 const Equipa = require('./equipa');
+var async = require('async');
 
 var SITE_URL = "https://www.soccerstats.com/";
 var PAGE_URL = "matches.asp?matchday=4"; //"matches.asp?matchday=1" ;
 var START_URL = SITE_URL + PAGE_URL;
 
-var EventEmitter = require("events").EventEmitter;
-var numeroJogosDoDia = new EventEmitter();
-var numeroJogosDoDiaAnalisados = new EventEmitter();
-var listaJogosAnalisados = new EventEmitter();
-var listaJogosCumpremCondicao = new EventEmitter();
+var numeroJogosDoDia = 0;
+var numeroJogosDoDiaAnalisados = 0;
+var numeroDeJogosComRespostaComErro = 0;
+var numeroDeJogosComLigaNaoSuportada = 0;
+var listaJogosAnalisados = [];
 var response;
-
+var listaJogosCumpremCondicao = [];
 
 var express = require('express');
 var cors = require('cors');
@@ -30,7 +31,7 @@ var corsOptions = {
 
   app.options('*', cors()) 
 
-/*app.get('/getstats',cors(corsOptions), function (req, res) {
+app.get('/getstats',cors(corsOptions), function (req, res) {
     console.log("recebeu request")
     response = res;
     crawl()
@@ -43,14 +44,17 @@ var server = app.listen(8080, function () {
    var port = server.address().port
    
    console.log("Example app listening at http://%s:%s", host, port)
-})*/
-crawl()
+})
 
 function crawl() {
-
+    numeroJogosDoDia = 0;
+    numeroJogosDoDiaAnalisados = 0;
+    numeroDeJogosComRespostaComErro = 0;
+    numeroDeJogosComLigaNaoSuportada = 0;
+    listaJogosAnalisados = [];
+    listaJogosCumpremCondicao = [];
     // New page we haven't visited
     visitPage(START_URL, null, function (gameNull, body) {
-        listaJogosAnalisados.data = [];
         // Parse the document body
         var $ = cheerio.load(body);
 
@@ -58,27 +62,41 @@ function crawl() {
         //para aceder aquanda da pagina maches.tomorrow
         //var c = $('#content').children('div')[0].children[1].children[3].children[3].children[0].children[1].children
         var tableGames = $('#content').find('.steam')
-        numeroJogosDoDia.data = tableGames.length / 2;
-        numeroJogosDoDiaAnalisados.data = 0;
-        console.log("Numero de jogos:" + tableGames.length/2)
-        for (var i = 0; i < tableGames.length; i+=2) {
-            var $tableChild = $(tableGames[i]);
-            var $ligaElemento = $($tableChild.parent().prevAll('.parent'))
-            if ($ligaElemento.length == 0) {
-                $ligaElemento = $($tableChild.prevAll().find('.parent'))
-            }
-            var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
-            var linkLigaTrends = "";
-            var linkLiga = $ligaElemento.find('a')[0].attribs.href
-            if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw")) {
-                linkLigaTrends = linkLiga.replace("latest", "trends");
-                var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
-                console.log('game ', game)
-                checkstatsGame(game);
-            }else{
-                numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
-            }
-        }
+        numeroJogosDoDia = tableGames.length / 2;
+        var i = 0
+        async.until(function(next){
+            next(null,i>tableGames.length-2)
+        }, function(callback){
+                var $tableChild = $(tableGames[i]);
+                var $ligaElemento = $($tableChild.parent().prevAll('.parent'))
+                if ($ligaElemento.length == 0) {
+                    $ligaElemento = $($tableChild.parent().prevAll().find('.parent'))
+                }
+                var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
+                var linkLigaTrends = "";
+                var linkLiga = $ligaElemento.find('a')[0].attribs.href
+                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw")) {
+                    linkLigaTrends = linkLiga.replace("latest", "trends");
+                    var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
+                    console.log("Vai iterar sobre o jogo ", game)
+                    checkstatsGame(game, function(err, data){
+                        i+=2;
+                        callback (err, data)
+                    });
+                }else{
+                    i+=2;
+                    console.log("Liga não suportada", linkLiga)
+                    numeroDeJogosComLigaNaoSuportada += 1;
+                    numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
+                    callback ()
+                }
+        },
+        function (err){
+            //if err faz merdas
+            console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
+            debugger;
+            response.send(listaJogosCumpremCondicao);
+        })
     });
 }
 
@@ -124,13 +142,16 @@ function visitPage(url, game, callback) {
 
 
 
-function checkstatsGame(game) {
+function checkstatsGame(game, next) {
     //Visit page of game
 
     visitPage(SITE_URL + game.href, game, function (game, body) {
         console.log("--------------------------Next game---------------------------")
         if (game.toString().includes("ECONNRESET") || game.toString().includes("Error")) {
-
+            console.log("Jogo com resposta com erro")
+            numeroDeJogosComRespostaComErro += 1;
+            numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
+            next()
         } else {
             // Parse the document body
             var $ = cheerio.load(body);
@@ -148,9 +169,9 @@ function checkstatsGame(game) {
                         console.log("Deu merda - validar porque deu este problema")
                         debugger;
                     }
-                    console.log("Nome da equipa na tabela:" + teamName)
-                    console.log("Nome da equipa Casa:" + game.equipaCasa.nomeEquipa)
-                    console.log("Nome da equipa Fora:" + game.equipaFora.nomeEquipa)
+                  //  console.log("Nome da equipa na tabela:" + teamName)
+                 //   console.log("Nome da equipa Casa:" + game.equipaCasa.nomeEquipa)
+                  //  console.log("Nome da equipa Fora:" + game.equipaFora.nomeEquipa)
                     var equipaInfo = [];
                     if (game.equipaCasa.nomeEquipa == teamName) {
                         //falta ciclo que corre pelas tds
@@ -243,10 +264,14 @@ function checkstatsGame(game) {
             //problema - páginas como brazil 2 tem mais detalhes
 
 
-            listaJogosAnalisados.data.push(game);
+            listaJogosAnalisados.push(game);
+            numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
+            //numeroJogosDoDiaAnalisados.emit('update');
+            aplicarALgoritmo(game,function(err, data){
+                next()
+            })
         }
-        numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
-        numeroJogosDoDiaAnalisados.emit('update');
+
     });
 
 
@@ -261,68 +286,74 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
         equipa.informacaoFora(equipaInfo);
 
 }
-numeroJogosDoDiaAnalisados.on('update', function () {
-    console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados.data)
-    console.log("Numero de lista de jogos com resultados:" + listaJogosAnalisados.data.length)
-    console.log("Numero de jogos :" + numeroJogosDoDia.data)
-    if (numeroJogosDoDiaAnalisados.data == numeroJogosDoDia.data) {
 
-        listaJogosCumpremCondicao.data = [];
-        //para cada jogo/game
-        for (let i = 0; i < listaJogosAnalisados.data.length; i++) {
-            equipaCasaLigaOver15 = listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver15
-            equipaForaLigaOver15 = listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver15
-            equipaCasaCasaOver15 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver15
-            equipaForaForaOver15 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver15
-            mediaLiga15 = listaJogosAnalisados.data[i].over15
-            let primeiroTeste = algoritmoFantastico(equipaCasaLigaOver15,equipaForaLigaOver15,equipaCasaCasaOver15,equipaForaForaOver15,mediaLiga15)
-            equipaCasaLigaOver25 = listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver25
-            equipaForaLigaOver25 = listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver25
-            equipaCasaCasaOver25 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver25
-            equipaForaForaOver25 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver25
-            mediaLiga25 = listaJogosAnalisados.data[i].over25
-            let segundoTeste = algoritmoFantastico(equipaCasaLigaOver25,equipaForaLigaOver25,equipaCasaCasaOver25,equipaForaForaOver25,mediaLiga25)
-            equipaCasaLigaOver35 = listaJogosAnalisados.data[i].equipaCasa.totalMatchGoalOver35
-            equipaForaLigaOver35 = listaJogosAnalisados.data[i].equipaFora.totalMatchGoalOver35
-            equipaCasaCasaOver35 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver35
-            equipaForaForaOver35 = listaJogosAnalisados.data[i].equipaCasa.homeMatchGoalOver35
-            mediaLiga35 = listaJogosAnalisados.data[i].over35
-            let terceiroTeste = algoritmoFantastico(equipaCasaLigaOver35,equipaForaLigaOver35,equipaCasaCasaOver35,equipaForaForaOver35,mediaLiga35)
-            if(primeiroTeste)
-                listaJogosAnalisados.data[i].over15validation = true;
-            if(segundoTeste)
-                listaJogosAnalisados.data[i].over25validation = true;
-            if(terceiroTeste)
-                listaJogosAnalisados.data[i].over35validation = true;
-
-            if (primeiroTeste == true|| segundoTeste == true || terceiroTeste == true) {
-                listaJogosCumpremCondicao.data.push(listaJogosAnalisados.data[i])
-            }
-        }
-        console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.data.length)
-       response.send(listaJogosCumpremCondicao.data);
+function aplicarALgoritmo (game, next) {
+    console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados)
+    console.log("Numero de lista de jogos com resultados:" + listaJogosAnalisados.length)
+    console.log("Numero de jogos com resposta com erro:" + numeroDeJogosComRespostaComErro)
+    console.log("Numero de jogos com resposta com liga nao suportada:" + numeroDeJogosComLigaNaoSuportada)
+    console.log("Numero de jogos :" + numeroJogosDoDia)
+    equipaCasaLigaOver15 = game.equipaCasa.totalMatchGoalOver15
+    equipaForaLigaOver15 = game.equipaFora.totalMatchGoalOver15
+    equipaCasaCasaOver15 = game.equipaCasa.homeMatchGoalOver15
+    equipaForaForaOver15 = game.equipaCasa.homeMatchGoalOver15
+    mediaLiga15 = game.over15
+    let over15Teste = algoritmoFantastico(equipaCasaLigaOver15,equipaForaLigaOver15,equipaCasaCasaOver15,equipaForaForaOver15,mediaLiga15)
+    equipaCasaLigaOver25 = game.equipaCasa.totalMatchGoalOver25
+    equipaForaLigaOver25 = game.equipaFora.totalMatchGoalOver25
+    equipaCasaCasaOver25 = game.equipaCasa.homeMatchGoalOver25
+    equipaForaForaOver25 = game.equipaCasa.homeMatchGoalOver25
+    mediaLiga25 = game.over25
+    let over25Teste = algoritmoFantastico(equipaCasaLigaOver25,equipaForaLigaOver25,equipaCasaCasaOver25,equipaForaForaOver25,mediaLiga25)
+    equipaCasaLigaOver35 = game.equipaCasa.totalMatchGoalOver35
+    equipaForaLigaOver35 = game.equipaFora.totalMatchGoalOver35
+    equipaCasaCasaOver35 = game.equipaCasa.homeMatchGoalOver35
+    equipaForaForaOver35 = game.equipaCasa.homeMatchGoalOver35
+    mediaLiga35 = game.over35
+    let over35Teste = algoritmoFantastico(equipaCasaLigaOver35,equipaForaLigaOver35,equipaCasaCasaOver35,equipaForaForaOver35,mediaLiga35)
+    if(over15Teste['teste']=='Passou'){
+        game.over15validation = over15Teste['teste'];
+        game.over15standardDeviation = over15Teste['desvioPadrao'];
     }
-});
+    if(over25Teste['teste']=='Passou'){
+        game.over25validation = over25Teste['teste'];
+        game.over25standardDeviation = over25Teste['desvioPadrao'];
+    }
+    if(over35Teste['teste']=='Passou'){
+        game.over35validation = over35Teste['teste'];
+        game.over35standardDeviation = over35Teste['desvioPadrao'];
+    }
+    
+    if (over15Teste['teste']=='Passou'|| over25Teste['teste']=='Passou' || over35Teste['teste']=='Passou') {
+        listaJogosCumpremCondicao.push(game)
+    }
+        
+        next();
+       
+    
+}
 
 function algoritmoFantastico(equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){
     let condicao1 = false;
-    let condicao2 = false;
-    let condicao3 = false;
-    //Condição da equipa da casa e fora ter média de golos superior à media de golos da liga
-    if (equipaCasaLiga >= mediaLiga && equipaForaLiga >= mediaLiga) {
-            condicao1 = true;
-    }
-    //Condição da equipa da casa ter média de golos em jogos em casa superior à media de golos da liga
-    if (equipaCasaCasa >= mediaLiga) {
-        condicao2 = true;
-    }
-    //Condição da equipa de fora ter média de golos em jogos fora superior à media de golos da liga
-    if (equipaForaFora >= mediaLiga) {
-        condicao3 = true;
-    }
-
-    if (condicao1 == true && condicao2 == true && condicao3 == true) {
-        return true
-    }
-    return false
-}
+     let condicao2 = false;
+     let condicao3 = false;
+     //Condição da equipa da casa e fora ter média de golos superior à media de golos da liga
+     if (equipaCasaLiga >= mediaLiga && equipaForaLiga >= mediaLiga) {
+             condicao1 = true;
+     }
+     //Condição da equipa da casa ter média de golos em jogos em casa superior à media de golos da liga
+     if (equipaCasaCasa >= mediaLiga) {
+         condicao2 = true;
+     }
+     //Condição da equipa de fora ter média de golos em jogos fora superior à media de golos da liga
+     if (equipaForaFora >= mediaLiga) {
+         condicao3 = true;
+     }
+ 
+     if (condicao1 == true && condicao2 == true && condicao3 == true) {
+         let mediaEquipas = parseInt((parseInt(equipaCasaLiga) + parseInt(equipaCasaCasa) + parseInt(equipaForaLiga) + parseInt(equipaForaFora))/4);
+         let desvioPadrao = mediaEquipas - mediaLiga;
+         return {teste: 'Passou', desvioPadrao: desvioPadrao}
+     }
+     return {teste: 'Não passou'}
+ }
