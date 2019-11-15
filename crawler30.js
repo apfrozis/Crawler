@@ -1,12 +1,12 @@
 var request = require('request');
 var cheerio = require('cheerio');
-var URL = require('url-parse');
 const Game = require('./structures/game');
 const Equipa = require('./structures/equipa');
+const League = require('./structures/league');
 var async = require('async');
 
 var SITE_URL = "https://www.soccerstats.com/";
-var PAGE_URL = "matches.asp?matchday=2"; //"matches.asp?matchday=1" ;
+var PAGE_URL = "matches.asp?matchday=2";
 var START_URL = SITE_URL + PAGE_URL;
 
 var numeroJogosDoDia = 0;
@@ -14,13 +14,28 @@ var numeroJogosDoDiaAnalisados = 0;
 var numeroDeJogosComRespostaComErro = 0;
 var numeroDeJogosComLigaNaoSuportada = 0;
 var listaJogosAnalisados = [];
-var response;
 var listaJogosCumpremCondicao = [];
+var listaLigas = [];
 
+
+var response;
 var express = require('express');
 var cors = require('cors');
 
+//Import the mongoose module
+var mongoose = require('mongoose');
 
+//Set up default mongoose connection
+var mongoDB = 'mongodb://heroku_6b7t2wg0:jo3rl5r1o5n5c5ltcfrt01ljud@ds345028.mlab.com:45028/heroku_6b7t2wg0';
+mongoose.connect(mongoDB, { useNewUrlParser: true });
+
+//Get the default connection
+var db = mongoose.connection;
+
+var GameModel = require('./data_layer/models/game')
+
+//Bind connection to error event (to get notification of connection errors)
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 var app = express();
 
@@ -58,9 +73,6 @@ function crawl() {
         // Parse the document body
         var $ = cheerio.load(body);
 
-
-        //para aceder aquanda da pagina maches.tomorrow
-        //var c = $('#content').children('div')[0].children[1].children[3].children[3].children[0].children[1].children
         var tableGames = $('#content').find('.steam')
         numeroJogosDoDia = tableGames.length / 2;
         var i = 0
@@ -75,7 +87,7 @@ function crawl() {
                 var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
                 var linkLigaTrends = "";
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href
-                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw")) {
+                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
                     console.log("Vai iterar sobre o jogo ", game)
@@ -100,51 +112,20 @@ function crawl() {
     });
 }
 
-function visitPage(url, game, callback) {
-
-    // Make the request
-    console.log("Visiting page " + url);
-    request(url, function (error, response, body) {
-        // Check status code (200 is HTTP OK)
-        console.log("Received answer: " + response);
-        console.log("Error: " + error);
-        if (error == null) {
-
-            //aqui nunca podes ter tipo isto
-            // if(error){
-            //     callback(a,b)
-            // }
-            // callback()
-            // Se tiveres erro isto vai entrar dentro do if chamar o callback e depois mais a baixo vai chamar o callback de novo
-            // vai chamar duas vezes o callback e vai rebentar-te com o codigo..
-
-            if (response.statusCode !== 200) {
-                console.log("Error:" + error);
-                //senhor aluno quando dá erro tens de propogar o erro para a função acima, no node  por convenção é sempre o primeiro 
-                //parametro no callback ou seja (err, data1, data2, .....)
-                callback("Error requesting data", error)
-            } else {
-                //console.log('body is ', body)
-                callback(game, body);
-            }
-
-        } else {
-            // debugger;
-            callback("Error: read ECONNRESET", error.toString())
-        }
-
-
-    });
-    //nunca vai esperar porque o node corre sempre em single thread todas as chamadas sao assincronas
-    //tens de fazer sempre o codigo todo na respostas do callback
-    //console.log("Não esperou pela response do request")
-}
-
-
-
 function checkstatsGame(game, next) {
     //Visit page of game
 
+    //Se a liga já tiver sido analisada não é preciso fazer outro pedido
+    let ligaAnalisada = verificarSeLigaJaFoiAnalisada(game)
+    if(ligaAnalisada){
+        preencherJogoComEstatisticasDaLiga(game,ligaAnalisada);
+        listaJogosAnalisados.push(game);
+        numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
+        aplicarALgoritmo(game,function(err, data){
+            next()
+        })
+    }
+else{
     visitPage(SITE_URL + game.href, game, function (game, body) {
         console.log("--------------------------Next game---------------------------")
         if (game.toString().includes("ECONNRESET") || game.toString().includes("Error")) {
@@ -156,8 +137,11 @@ function checkstatsGame(game, next) {
             // Parse the document body
             var $ = cheerio.load(body);
 
-            //var c = $('#content').children('div')[0].children[1].children[3].children[3].children[0].children[1].children
+            //new league not searched yet
+            let league = new League(game.liga, game.href);
+
             var tableGamesStats = $('.sortable')
+
             //análise das 3 tabelas total/casa/fora
             for (var j = 0; j < tableGamesStats.length; j++) {
                 var $tableStats = $($(tableGamesStats[j]).find('.trow8'))
@@ -174,7 +158,6 @@ function checkstatsGame(game, next) {
                   //  console.log("Nome da equipa Fora:" + game.equipaFora.nomeEquipa)
                     var equipaInfo = [];
                     if (game.equipaCasa.nomeEquipa == teamName) {
-                        //falta ciclo que corre pelas tds
 
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
                             try {
@@ -197,7 +180,7 @@ function checkstatsGame(game, next) {
                         }
                         equipaForaJogouForaEquipaCasaJogouCasa++;
                         colocarInformacaoEquipas(game.equipaCasa, j, equipaInfo);
-
+                        league.addEquipa(game.equipaCasa)
 
                     } else if (game.equipaFora.nomeEquipa == teamName) {
                         var equipaInfo = [];
@@ -220,21 +203,46 @@ function checkstatsGame(game, next) {
                             }
 
                         }
-
                         equipaForaJogouForaEquipaCasaJogouCasa++;
                         colocarInformacaoEquipas(game.equipaFora, j, equipaInfo);
+                        league.addEquipa(game.equipaFora)
+                    }else{
+                        var equipaInfo = [];
+                        for (var f = 1; f < $($tableStats[i]).children().length; f++) {
+                            try {
+                                let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('span')[0].children[0].data
+                                equipaInfo.push(estatisticaDaTabela.replace('%', ''))
+                            } catch {
+                                try {
+                                    let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('b')[0].children[0].data
+                                    equipaInfo.push(estatisticaDaTabela.replace('%', ''))
+                                } catch {
+                                    try {
+                                        let estatisticaDaTabela = $($($tableStats[i]).children()[f]).find('font')[0].children[0].data
+                                        equipaInfo.push(estatisticaDaTabela.replace('%', ''))
+                                    } catch {
+                                        debugger;
+                                    }
+                                }
+                            }
 
+                        }
+                        equipaForaJogouForaEquipaCasaJogouCasa++;
+                        let equipa = new Equipa(teamName)
+                        colocarInformacaoEquipas(equipa, j, equipaInfo);
+                        league.addEquipa(equipa); 
                     }
                 }
                 if (equipaForaJogouForaEquipaCasaJogouCasa != 2)
                     game.semJogos = true;
 
             }
-            //ir buscar as estatisticas da liga (tabela no fim da página)
-            //$('table')[38][7]
-            //$('table')[43][1][7]
-            //$('table')[43][3][7]
-            //$('table')[43][5][7]
+            /*var category = $('td').filter(function() {
+                return $(this).text().trim().includes('Home wins:');
+              });
+            category[category.length-1]
+            */
+
             console.log("Tabela liga:" + game.href)
             var over15 = "";
             var over25 = "";
@@ -243,9 +251,10 @@ function checkstatsGame(game, next) {
                 console.log("Table 46-1,5:" + $($($($('table')[46])[0])[0]).find('b')[1].children[0].data)
                 console.log("Table 46-2,5:" + $($($($('table')[46])[0])[0]).find('b')[3].children[0].data)
                 console.log("Table 46-3,5:" + $($($($('table')[46])[0])[0]).find('b')[5].children[0].data)
-                var over15 = $($($($('table')[46])[0])[0]).find('b')[1].children[0].data;
-                var over25 = $($($($('table')[46])[0])[0]).find('b')[3].children[0].data;
-                var over35 = $($($($('table')[46])[0])[0]).find('b')[5].children[0].data;
+                var over15 = $($($($('table')[45])[0])[0]).find('b')[1].children[0].data;
+                var over25 = $($($($('table')[45])[0])[0]).find('b')[3].children[0].data;
+                var over35 = $($($($('table')[45])[0])[0]).find('b')[5].children[0].data;
+                debugger;
             } catch {
                 try{
                 console.log("Linha 43-1,5:" + $($($($('table')[40])[0])[0]).find('b')[1].children[0].data)
@@ -259,7 +268,10 @@ function checkstatsGame(game, next) {
                    // debugger;
                 }
             }
-            game.ligaEstatisticas(over15.replace('%', ''), over25.replace('%', ''), over35.replace('%', ''));
+            game.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
+
+            league.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
+            listaLigas.push(league)
 
             //problema - páginas como brazil 2 tem mais detalhes
 
@@ -273,8 +285,29 @@ function checkstatsGame(game, next) {
         }
 
     });
+}
+}
 
+function preencherJogoComEstatisticasDaLiga(game,ligaAnalisada){
+    for (var i = 1; i < ligaAnalisada.equipas.length; i++) {
+        if (game.equipaCasa.nomeEquipa == ligaAnalisada.equipas[i].nomeEquipa) {
+            game.equipaCasa = ligaAnalisada.equipas[i];
+            equipaForaJogouForaEquipaCasaJogouCasa++;   
+        } else if (game.equipaFora.nomeEquipa == ligaAnalisada.equipas[i].nomeEquipa) {
+            equipaForaJogouForaEquipaCasaJogouCasa++;
+            game.equipaFora = ligaAnalisada.equipas[i];
+        }
+    }
+    game.ligaEstatisticas(ligaAnalisada.equipas[i].over15.replace('%', ''), ligaAnalisada.equipas[i].over25.replace('%', ''), ligaAnalisada.equipas[i].over35.replace('%', ''));
+}
 
+function verificarSeLigaJaFoiAnalisada(game) {
+    for(let i = 0; i < listaLigas.length; i++){
+        if(game.linkLiga==listaLigas[i].link){
+            return listaLigas[i];
+        }
+    }
+    return null;
 }
 
 function colocarInformacaoEquipas(equipa, j, equipaInfo) {
@@ -325,6 +358,11 @@ function aplicarALgoritmo (game, next) {
     }
     
     if (over15Teste['teste']=='Passou'|| over25Teste['teste']=='Passou' || over35Teste['teste']=='Passou') {
+        var gamemodel = new GameModel(game);
+        gamemodel.save(function(err) {
+            if (err) throw err;
+            console.log('User saved successfully!');
+        });
         listaJogosCumpremCondicao.push(game)
     }
         
@@ -358,3 +396,36 @@ function algoritmoFantastico(equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipa
      }
      return {teste: 'Não passou'}
  }
+
+function visitPage(url, game, callback) {
+    // Make the request
+    console.log("Visiting page " + url);
+    request(url, function (error, response, body) {
+        // Check status code (200 is HTTP OK)
+        console.log("Received answer: " + response);
+        console.log("Error: " + error);
+        if (error == null) {
+
+            //aqui nunca podes ter tipo isto
+            // if(error){
+            //     callback(a,b)
+            // }
+            // callback()
+            // Se tiveres erro isto vai entrar dentro do if chamar o callback e depois mais a baixo vai chamar o callback de novo
+            // vai chamar duas vezes o callback e vai rebentar-te com o codigo..
+
+            if (response.statusCode !== 200) {
+                console.log("Error:" + error);
+                //senhor aluno quando dá erro tens de propogar o erro para a função acima, no node  por convenção é sempre o primeiro 
+                //parametro no callback ou seja (err, data1, data2, .....)
+                callback("Error requesting data", error)
+            } else {
+                //console.log('body is ', body)
+                callback(game, body);
+            }
+        } else {
+            // debugger;
+            callback("Error: read ECONNRESET", error.toString())
+        }
+    });
+}

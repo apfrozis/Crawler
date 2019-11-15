@@ -8,7 +8,7 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}/crawler20.js"
+            "program": "${workspaceFolder}/crawler30.js"
         }
     ]
 }
