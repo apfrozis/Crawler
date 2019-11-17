@@ -75,7 +75,8 @@ function crawl() {
                 var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
                 var linkLigaTrends = "";
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href
-                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw")) {
+                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") &&
+                !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
                     console.log("Vai iterar sobre o jogo ", game)
@@ -236,29 +237,24 @@ function checkstatsGame(game, next) {
             //$('table')[43][3][7]
             //$('table')[43][5][7]
             console.log("Tabela liga:" + game.href)
-            var over15 = "";
-            var over25 = "";
-            var over35 = "";
-            try {
-                console.log("Table 46-1,5:" + $($($($('table')[46])[0])[0]).find('b')[1].children[0].data)
-                console.log("Table 46-2,5:" + $($($($('table')[46])[0])[0]).find('b')[3].children[0].data)
-                console.log("Table 46-3,5:" + $($($($('table')[46])[0])[0]).find('b')[5].children[0].data)
-                var over15 = $($($($('table')[46])[0])[0]).find('b')[1].children[0].data;
-                var over25 = $($($($('table')[46])[0])[0]).find('b')[3].children[0].data;
-                var over35 = $($($($('table')[46])[0])[0]).find('b')[5].children[0].data;
-            } catch {
-                try{
-                console.log("Linha 43-1,5:" + $($($($('table')[40])[0])[0]).find('b')[1].children[0].data)
-                console.log("Linha 43-2,5:" + $($($($('table')[40])[0])[0]).find('b')[3].children[0].data)
-                console.log("Linha 43-3,5:" + $($($($('table')[40])[0])[0]).find('b')[5].children[0].data)
-                var over15 = $($($($('table')[40])[0])[0]).find('b')[1].children[0].data;
-                var over25 = $($($($('table')[40])[0])[0]).find('b')[3].children[0].data;
-                var over35 = $($($($('table')[40])[0])[0]).find('b')[5].children[0].data;
-                }
-                catch{
-                   // debugger;
-                }
-            }
+            console.log("Tabela liga:" + game.href)
+            var over15 = $('td').filter(function() {
+                return $(this).text().trim().includes('Home wins');
+              });
+              var over25 = $('td').filter(function() {
+                return $(this).text().trim().includes('Draws');
+              });
+              var over35 = $('td').filter(function() {
+                return $(this).text().trim().includes('Away wins:');
+              });
+              try{
+              over15 = $(over15[over15.length-1].next.next).find('b')[0].children[0].data
+              over25 = $(over25[over25.length-1].next.next).find('b')[0].children[0].data
+              over35 = $(over35[over35.length-1].next.next).find('b')[0].children[0].data
+              }catch(e){
+                  debugger;
+              }
+
             game.ligaEstatisticas(over15.replace('%', ''), over25.replace('%', ''), over35.replace('%', ''));
 
             //problema - páginas como brazil 2 tem mais detalhes

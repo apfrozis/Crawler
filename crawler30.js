@@ -6,7 +6,7 @@ const League = require('./structures/league');
 var async = require('async');
 
 var SITE_URL = "https://www.soccerstats.com/";
-var PAGE_URL = "matches.asp?matchday=2";
+var PAGE_URL = "matches.asp?matchday=4";
 var START_URL = SITE_URL + PAGE_URL;
 
 var numeroJogosDoDia = 0;
@@ -87,7 +87,9 @@ function crawl() {
                 var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
                 var linkLigaTrends = "";
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href
-                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") && !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual")) {
+                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") &&
+                 !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
+                  !linkLiga.includes("eurou19qual")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
                     console.log("Vai iterar sobre o jogo ", game)
@@ -106,7 +108,6 @@ function crawl() {
         function (err){
             //if err faz merdas
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
-            debugger;
             response.send(listaJogosCumpremCondicao);
         })
     });
@@ -117,7 +118,7 @@ function checkstatsGame(game, next) {
 
     //Se a liga já tiver sido analisada não é preciso fazer outro pedido
     let ligaAnalisada = verificarSeLigaJaFoiAnalisada(game)
-    if(ligaAnalisada){
+    if(ligaAnalisada != null){
         preencherJogoComEstatisticasDaLiga(game,ligaAnalisada);
         listaJogosAnalisados.push(game);
         numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
@@ -146,7 +147,7 @@ else{
             for (var j = 0; j < tableGamesStats.length; j++) {
                 var $tableStats = $($(tableGamesStats[j]).find('.trow8'))
                 var equipaForaJogouForaEquipaCasaJogouCasa = 0;
-                for (var i = 1; i < $tableStats.length - 1; i++) {
+                for (var i = 0; i < $tableStats.length; i++) {
                     try {
                         var teamName = $($($($tableStats[i]).children()[0]).children()[0])[0].children[0].data
                     } catch {
@@ -181,7 +182,6 @@ else{
                         equipaForaJogouForaEquipaCasaJogouCasa++;
                         colocarInformacaoEquipas(game.equipaCasa, j, equipaInfo);
                         league.addEquipa(game.equipaCasa)
-
                     } else if (game.equipaFora.nomeEquipa == teamName) {
                         var equipaInfo = [];
                         for (var f = 1; f < $($tableStats[i]).children().length; f++) {
@@ -227,10 +227,18 @@ else{
                             }
 
                         }
-                        equipaForaJogouForaEquipaCasaJogouCasa++;
-                        let equipa = new Equipa(teamName)
-                        colocarInformacaoEquipas(equipa, j, equipaInfo);
-                        league.addEquipa(equipa); 
+                        if(j==0){
+                            let equipa = new Equipa(teamName)
+                            colocarInformacaoEquipas(equipa, j, equipaInfo);
+                            league.addEquipa(equipa); 
+                        }
+                        else{
+                            for(let g = 0 ; g < league.equipas.length; g++){
+                                if(league.equipas[g].nomeEquipa == teamName){
+                                    colocarInformacaoEquipas(league.equipas[g], j, equipaInfo);
+                                }
+                            }
+                        }
                     }
                 }
                 if (equipaForaJogouForaEquipaCasaJogouCasa != 2)
@@ -244,37 +252,29 @@ else{
             */
 
             console.log("Tabela liga:" + game.href)
-            var over15 = "";
-            var over25 = "";
-            var over35 = "";
-            try {
-                console.log("Table 46-1,5:" + $($($($('table')[46])[0])[0]).find('b')[1].children[0].data)
-                console.log("Table 46-2,5:" + $($($($('table')[46])[0])[0]).find('b')[3].children[0].data)
-                console.log("Table 46-3,5:" + $($($($('table')[46])[0])[0]).find('b')[5].children[0].data)
-                var over15 = $($($($('table')[45])[0])[0]).find('b')[1].children[0].data;
-                var over25 = $($($($('table')[45])[0])[0]).find('b')[3].children[0].data;
-                var over35 = $($($($('table')[45])[0])[0]).find('b')[5].children[0].data;
-                debugger;
-            } catch {
-                try{
-                console.log("Linha 43-1,5:" + $($($($('table')[40])[0])[0]).find('b')[1].children[0].data)
-                console.log("Linha 43-2,5:" + $($($($('table')[40])[0])[0]).find('b')[3].children[0].data)
-                console.log("Linha 43-3,5:" + $($($($('table')[40])[0])[0]).find('b')[5].children[0].data)
-                var over15 = $($($($('table')[40])[0])[0]).find('b')[1].children[0].data;
-                var over25 = $($($($('table')[40])[0])[0]).find('b')[3].children[0].data;
-                var over35 = $($($($('table')[40])[0])[0]).find('b')[5].children[0].data;
-                }
-                catch{
-                   // debugger;
-                }
-            }
+            var over15 = $('td').filter(function() {
+                return $(this).text().trim().includes('Home wins');
+              });
+              var over25 = $('td').filter(function() {
+                return $(this).text().trim().includes('Draws');
+              });
+              var over35 = $('td').filter(function() {
+                return $(this).text().trim().includes('Away wins:');
+              });
+              try{
+              over15 = $(over15[over15.length-1].parent).find('b')[1].children[0].data
+              over25 = $(over25[over25.length-1].parent).find('b')[1].children[0].data
+              over35 = $(over35[over35.length-1].parent).find('b')[1].children[0].data
+              }catch(e){
+                  debugger;
+              }
+
             game.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
 
             league.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
             listaLigas.push(league)
 
             //problema - páginas como brazil 2 tem mais detalhes
-
 
             listaJogosAnalisados.push(game);
             numeroJogosDoDiaAnalisados = numeroJogosDoDiaAnalisados + 1;
@@ -292,18 +292,16 @@ function preencherJogoComEstatisticasDaLiga(game,ligaAnalisada){
     for (var i = 1; i < ligaAnalisada.equipas.length; i++) {
         if (game.equipaCasa.nomeEquipa == ligaAnalisada.equipas[i].nomeEquipa) {
             game.equipaCasa = ligaAnalisada.equipas[i];
-            equipaForaJogouForaEquipaCasaJogouCasa++;   
         } else if (game.equipaFora.nomeEquipa == ligaAnalisada.equipas[i].nomeEquipa) {
-            equipaForaJogouForaEquipaCasaJogouCasa++;
             game.equipaFora = ligaAnalisada.equipas[i];
         }
     }
-    game.ligaEstatisticas(ligaAnalisada.equipas[i].over15.replace('%', ''), ligaAnalisada.equipas[i].over25.replace('%', ''), ligaAnalisada.equipas[i].over35.replace('%', ''));
+    game.ligaEstatisticas(ligaAnalisada.over15.replace('%', ''), ligaAnalisada.over25.replace('%', ''), ligaAnalisada.over35.replace('%', ''));
 }
 
 function verificarSeLigaJaFoiAnalisada(game) {
     for(let i = 0; i < listaLigas.length; i++){
-        if(game.linkLiga==listaLigas[i].link){
+        if(game.href==listaLigas[i].link){
             return listaLigas[i];
         }
     }
@@ -317,7 +315,6 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
         equipa.informacaoCasa(equipaInfo);
     else if (j == 2)
         equipa.informacaoFora(equipaInfo);
-
 }
 
 function aplicarALgoritmo (game, next) {
@@ -329,21 +326,21 @@ function aplicarALgoritmo (game, next) {
     equipaCasaLigaOver15 = game.equipaCasa.totalMatchGoalOver15
     equipaForaLigaOver15 = game.equipaFora.totalMatchGoalOver15
     equipaCasaCasaOver15 = game.equipaCasa.homeMatchGoalOver15
-    equipaForaForaOver15 = game.equipaCasa.homeMatchGoalOver15
+    equipaForaForaOver15 = game.equipaFora.awayMatchGoalOver15
     mediaLiga15 = game.over15
-    let over15Teste = algoritmoFantastico(equipaCasaLigaOver15,equipaForaLigaOver15,equipaCasaCasaOver15,equipaForaForaOver15,mediaLiga15)
+    let over15Teste = algoritmoFantastico(game,equipaCasaLigaOver15,equipaForaLigaOver15,equipaCasaCasaOver15,equipaForaForaOver15,mediaLiga15)
     equipaCasaLigaOver25 = game.equipaCasa.totalMatchGoalOver25
     equipaForaLigaOver25 = game.equipaFora.totalMatchGoalOver25
     equipaCasaCasaOver25 = game.equipaCasa.homeMatchGoalOver25
-    equipaForaForaOver25 = game.equipaCasa.homeMatchGoalOver25
+    equipaForaForaOver25 = game.equipaFora.awayMatchGoalOver25
     mediaLiga25 = game.over25
-    let over25Teste = algoritmoFantastico(equipaCasaLigaOver25,equipaForaLigaOver25,equipaCasaCasaOver25,equipaForaForaOver25,mediaLiga25)
+    let over25Teste = algoritmoFantastico(game, equipaCasaLigaOver25,equipaForaLigaOver25,equipaCasaCasaOver25,equipaForaForaOver25,mediaLiga25)
     equipaCasaLigaOver35 = game.equipaCasa.totalMatchGoalOver35
     equipaForaLigaOver35 = game.equipaFora.totalMatchGoalOver35
     equipaCasaCasaOver35 = game.equipaCasa.homeMatchGoalOver35
-    equipaForaForaOver35 = game.equipaCasa.homeMatchGoalOver35
+    equipaForaForaOver35 = game.equipaFora.awayMatchGoalOver35
     mediaLiga35 = game.over35
-    let over35Teste = algoritmoFantastico(equipaCasaLigaOver35,equipaForaLigaOver35,equipaCasaCasaOver35,equipaForaForaOver35,mediaLiga35)
+    let over35Teste = algoritmoFantastico(game, equipaCasaLigaOver35,equipaForaLigaOver35,equipaCasaCasaOver35,equipaForaForaOver35,mediaLiga35)
     if(over15Teste['teste']=='Passou'){
         game.over15validation = over15Teste['teste'];
         game.over15standardDeviation = over15Teste['desvioPadrao'];
@@ -371,27 +368,25 @@ function aplicarALgoritmo (game, next) {
     
 }
 
-function algoritmoFantastico(equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){
+function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){
     let condicao1 = false;
      let condicao2 = false;
      let condicao3 = false;
      //Condição da equipa da casa e fora ter média de golos superior à media de golos da liga
-     if (equipaCasaLiga >= mediaLiga && equipaForaLiga >= mediaLiga) {
+     if (parseInt(equipaCasaLiga) >= parseInt(mediaLiga) && parseInt(equipaForaLiga) >= parseInt(mediaLiga)) {
              condicao1 = true;
      }
      //Condição da equipa da casa ter média de golos em jogos em casa superior à media de golos da liga
-     if (equipaCasaCasa >= mediaLiga) {
+     if (parseInt(equipaCasaCasa) >= parseInt(mediaLiga)) {
          condicao2 = true;
      }
      //Condição da equipa de fora ter média de golos em jogos fora superior à media de golos da liga
-     if (equipaForaFora >= mediaLiga) {
+     if (parseInt(equipaForaFora) >= parseInt(mediaLiga)) {
          condicao3 = true;
      }
- 
      if (condicao1 == true && condicao2 == true && condicao3 == true) {
          let mediaEquipas = parseInt((parseInt(equipaCasaLiga) + parseInt(equipaCasaCasa) + parseInt(equipaForaLiga) + parseInt(equipaForaFora))/4);
-         let desvioPadrao = mediaEquipas - mediaLiga;
-         debugger;
+         let desvioPadrao = mediaEquipas - parseInt(mediaLiga);
          return {teste: 'Passou', desvioPadrao: desvioPadrao + " %"}
      }
      return {teste: 'Não passou'}
