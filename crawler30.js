@@ -92,11 +92,10 @@ function crawl() {
                  !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
                   !linkLiga.includes("eurou19qual")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
-                    var hoje = Date.now()
-                //    debugger;
-                 //   var gameDate = new Date(hoje.getTime() * DIA_JOGO + 86400000)//date.setTime( date.getTime() + days * 86400000 )
-                  //  debugger;
-                    var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,new Date())
+                    var today = new Date()
+                    today.setDate(today.getDate() + (DIA_JOGO-1));
+                    debugger;
+                    var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
                     checkstatsGame(game, function(err, data){
                         i+=2;
