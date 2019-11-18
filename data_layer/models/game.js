@@ -9,7 +9,8 @@ var gameModelSchema = new Schema({
   href: String,
   over15: String,
   over25: String,
-  over35: String
+  over35: String,
+  gameDate: Date
 });
 
 // Compile model from schema

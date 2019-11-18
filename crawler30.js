@@ -6,7 +6,8 @@ const League = require('./structures/league');
 var async = require('async');
 
 var SITE_URL = "https://www.soccerstats.com/";
-var PAGE_URL = "matches.asp?matchday=4";
+var DIA_JOGO = 3;
+var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
 var numeroJogosDoDia = 0;
@@ -91,7 +92,11 @@ function crawl() {
                  !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
                   !linkLiga.includes("eurou19qual")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
-                    var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends)
+                    var hoje = Date.now()
+                //    debugger;
+                 //   var gameDate = new Date(hoje.getTime() * DIA_JOGO + 86400000)//date.setTime( date.getTime() + days * 86400000 )
+                  //  debugger;
+                    var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,new Date())
                     console.log("Vai iterar sobre o jogo ", game)
                     checkstatsGame(game, function(err, data){
                         i+=2;

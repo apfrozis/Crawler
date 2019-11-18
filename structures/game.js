@@ -2,11 +2,12 @@
 
     class Game {
 
-        constructor(equipaCasa, equipaFora, liga, href) {
+        constructor(equipaCasa, equipaFora, liga, href, gameDate) {
             this.equipaCasa = new Equipa(equipaCasa);
             this.equipaFora = new Equipa(equipaFora);
             this.liga = liga;
             this.href = href;
+            this.gameDate = gameDate;
         }
 
         ligaEstatisticas(over15, over25, over35) {
