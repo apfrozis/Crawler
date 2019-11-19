@@ -1,6 +1,7 @@
 var request = require('request');
 var cheerio = require('cheerio');
 var URL = require('url-parse');
+var async = require('async');
 const Game = require('./game');
 const Equipa = require('./equipa');
 
@@ -17,6 +18,7 @@ var analisaJogo = new EventEmitter();
 var listJogosCondicao15 = [];
 var listJogosCondicao25 = [];
 var listJogosCondicao35 = [];
+let totalJogosProcessados15 = 0;
 
 
 
@@ -48,7 +50,7 @@ function crawl() {
             if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa")) {
                 linkLigaTrends = linkLiga.replace("latest", "trends");
                 var game = new Game(tableGames[i].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].children[1].children[0].data.replace(/(\r\n|\n|\r)/gm, ""), "", linkLigaTrends)
-                console.log('game ', game)
+                // console.log('game ', game)
                 checkstatsGame(game);
             }
 
@@ -65,8 +67,6 @@ function visitPage(url, game, callback) {
     console.log("Visiting page " + url);
     request(url, function (error, response, body) {
         // Check status code (200 is HTTP OK)
-        console.log("Received answer: " + response);
-        console.log("Error: " + error);
         if (error == null) {
 
             //aqui nunca podes ter tipo isto
@@ -89,6 +89,7 @@ function visitPage(url, game, callback) {
 
         } else {
             // debugger;
+            console.log('error connectiong ', url)
             callback(("Error: read ECONNRESET", error.toString()))
         }
 
@@ -106,7 +107,8 @@ function checkstatsGame(game) {
 
     visitPage(SITE_URL + game.href, game, function (game, body) {
         console.log("--------------------------Next game---------------------------")
-        if (game.toString().includes("ECONNRESET")) {
+        if (!game || game.toString().includes("ECONNRESET")) {
+            console.error('not able to get game info ', game )
 
         } else {
             // Parse the document body
@@ -125,9 +127,9 @@ function checkstatsGame(game) {
                         console.log("Deu merda - validar porque deu este problema")
                         debugger;
                     }
-                    console.log("Nome da equipa na tabela:" + teamName)
-                    console.log("Nome da equipa Casa:" + game.equipaCasa.nomeEquipa)
-                    console.log("Nome da equipa Fora:" + game.equipaFora.nomeEquipa)
+                    // console.log("Nome da equipa na tabela:" + teamName)
+                    // console.log("Nome da equipa Casa:" + game.equipaCasa.nomeEquipa)
+                    // console.log("Nome da equipa Fora:" + game.equipaFora.nomeEquipa)
                     var equipaInfo = [];
                     if (game.equipaCasa.nomeEquipa == teamName) {
                         //falta ciclo que corre pelas tds
@@ -191,21 +193,21 @@ function checkstatsGame(game) {
             //$('table')[43][1][7]
             //$('table')[43][3][7]
             //$('table')[43][5][7]
-            console.log("Tabela liga:" + game.href)
+            // console.log("Tabela liga:" + game.href)
             var over15 = "";
             var over25 = "";
             var over35 = "";
             try {
-                console.log("Linha 39-1,5:" + $($($($('table')[39]).children()[0]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 39-2,5:" + $($($($('table')[39]).children()[1]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 39-3,5:" + $($($($('table')[39]).children()[2]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 39-1,5:" + $($($($('table')[39]).children()[0]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 39-2,5:" + $($($($('table')[39]).children()[1]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 39-3,5:" + $($($($('table')[39]).children()[2]).children()[4]).children()[0].children[0].data)
                 var over15 = $($($($('table')[39]).children()[0]).children()[4]).children()[0].children[0].data;
                 var over25 = $($($($('table')[39]).children()[1]).children()[4]).children()[0].children[0].data;
                 var over35 = $($($($('table')[39]).children()[2]).children()[4]).children()[0].children[0].data;
             } catch {
-                console.log("Linha 43-1,5:" + $($($($('table')[45]).children()[0]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 43-2,5:" + $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data)
-                console.log("Linha 43-3,5:" + $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 43-1,5:" + $($($($('table')[45]).children()[0]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 43-2,5:" + $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data)
+                // console.log("Linha 43-3,5:" + $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data)
                 var over15 = $($($($('table')[45]).children()[0]).children()[4]).children()[0].children[0].data;
                 var over25 = $($($($('table')[45]).children()[1]).children()[4]).children()[0].children[0].data;
                 var over35 = $($($($('table')[45]).children()[2]).children()[4]).children()[0].children[0].data;
@@ -219,8 +221,9 @@ function checkstatsGame(game) {
             analisaJogo.emit('processaJogoOver15', game);
         }
         numeroJogosDoDiaAnalisados.data = numeroJogosDoDiaAnalisados.data + 1;
-        //numeroJogosDoDiaAnalisados.emit('update');
-        //console.log('jogos acima de 15 ', listJogosCondicao15 )
+        numeroJogosDoDiaAnalisados.emit('finalize');
+
+         console.log('jogos acima de 15 ', listJogosCondicao15.length )
     });
 
 
@@ -239,20 +242,17 @@ function colocarInformacaoEquipas(equipa, j, equipaInfo) {
 analisaJogo.on('processaJogoOver15', function(game) {
 
     console.log('Jogo :  ', game.equipaCasa.nomeEquipa , ' - ', game.equipaFora.nomeEquipa  );
-    console.log('totalHome15 ',game.equipaCasa.totalMatchGoalOver15, '  totalAway15 ',game.equipaFora.totalMatchGoalOver15);
-    console.log('homeOver15 ',game.equipaCasa.homeMatchGoalOver15);
-    console.log('awayOver15 ',game.equipaFora.homeMatchGoalOver15);
-
-
-    console.log('==========================')
-    console.log('==========================')
-
+    // console.log('totalHome15 ',game.equipaCasa.totalMatchGoalOver15, '  totalAway15 ',game.equipaFora.totalMatchGoalOver15);
+    // console.log('homeOver15 ',game.equipaCasa.homeMatchGoalOver15);
+    // console.log('awayOver15 ',game.equipaFora.homeMatchGoalOver15);
 
 
     //Percent increase = [(new value - original value)/original value] * 100
     let overPercentagemTotal15 = 0;
     let overPercentagemHome15 = 0;
     let overPercentagemAway15 = 0;
+    let media = 0;
+    let condicao = 0;
 
     //to do calcular a percentagem que passa a mais da media da liga para as 3 condições!
 
@@ -260,20 +260,57 @@ analisaJogo.on('processaJogoOver15', function(game) {
     if(game.equipaCasa.totalMatchGoalOver15 >  game.over15 && game.equipaFora.totalMatchGoalOver15 > game.over15 )
     {
         //calcular o incremento de percentagem e arrendondar a duas casas
-        overPercentagemTotal15 = Math.round( ((game.equipaCasa.totalMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
+        overPercentagemTotal15 = Math.round( ((game.equipaCasa.totalMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) ;
+        console.log('MEDIA overPercentagemTotal15 ' ,overPercentagemTotal15 )
+        condicao ++;
         if(game.equipaCasa.homeMatchGoalOver15 >= game.over15){
-            overPercentagemHome15 = Math.round( ((game.equipaCasa.homeMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
+            overPercentagemHome15 = Math.round( ((game.equipaCasa.homeMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) ;
+            console.log('MEDIA overPercentagemHome15 ' ,overPercentagemHome15 )
 
+            condicao ++;
             if(game.equipaFora.awayMatchGoalOver15 >= game.over15)
             {
-                overPercentagemAway15 = Math.round( ((game.equipaFora.awayMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) / 100;
-                let media = (overPercentagemTotal15 + overPercentagemHome15 + overPercentagemAway15) / 3;
-                game.percAcimaMedia = media;
-                console.log(' $$$$ Jogo :  ', game.equipaCasa.nomeEquipa , ' - ', game.equipaFora.nomeEquipa , ' media acima ', media )
-                listJogosCondicao15.push(game)
+                overPercentagemAway15 = Math.round( ((game.equipaFora.awayMatchGoalOver15 - game.over15  ) / game.over15 ) * 100) ;
+                console.log('MEDIA overPercentagemAway15 ' ,overPercentagemAway15 )
+
+                condicao ++;
             }
         }
     }
+    if(condicao >= 3){
+        media = (overPercentagemTotal15 + overPercentagemHome15 + overPercentagemAway15) / 3;
+        game.percAcimaMedia = media;
+        console.log(' $$$$ Jogo :  ', game.equipaCasa.nomeEquipa , ' - ', game.equipaFora.nomeEquipa , ' media acima ', media )
+        listJogosCondicao15.push(game)
+
+    }
+    else{
+        console.info('game not satisfy all conditions ', condicao)
+    }
+
+    totalJogosProcessados15++;
+    console.log('==========================')
+    console.log('==========================')
+});
+
+numeroJogosDoDiaAnalisados.on('finalize', function () {
+    //aproveitar a martelada do afonsinho depois tenho de mudar o fluxo disto...
+    if (numeroJogosDoDiaAnalisados.data == numeroJogosDoDia.data) 
+    {
+        async.map(listJogosCondicao15, (item, next) =>{
+            next(null, {
+                casa : item.equipaCasa.nomeEquipa,
+                fora : item.equipaFora.nomeEquipa,
+                href:  item.href,
+                mediaAcima : item.percAcimaMedia
+            } );
+        }, function(err, results) {
+            console.log('total jogos processados ', totalJogosProcessados15, ' total passaram ', results.length )
+            console.log('total de jogos acima da media ', results)
+        });
+
+    }
+
 });
 
 
