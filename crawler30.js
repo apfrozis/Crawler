@@ -1,14 +1,18 @@
 var request = require('request');
+require('dotenv').config(); // load configurations
 var cheerio = require('cheerio');
 const Game = require('./structures/game');
 const Equipa = require('./structures/equipa');
 const League = require('./structures/league');
-var async = require('async');
+const async = require('async');
+
 
 var SITE_URL = "https://www.soccerstats.com/";
 var DIA_JOGO = 3;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
+
+console.log('process.env.DATABASE_URL : ', process.env.DATABASE_URL)
 
 var numeroJogosDoDia = 0;
 var numeroJogosDoDiaAnalisados = 0;
@@ -32,8 +36,18 @@ mongoose.connect(mongoDB, { useNewUrlParser: true });
 
 //Get the default connection
 var db = mongoose.connection;
+var GameModel = require('./data_layer/models/game');
+const Layer  =  require('./data_layer/datalayer.js');
 
-var GameModel = require('./data_layer/models/game')
+const _layer = new Layer()
+
+
+var modelToSave = {
+    username : "vitor viana",
+    password : "benfica"
+}
+_layer.abstractModel_save(modelToSave, () =>{});
+
 
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
