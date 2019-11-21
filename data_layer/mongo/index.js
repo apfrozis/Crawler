@@ -3,29 +3,28 @@ const path = require('path')
 const mongoose = require('mongoose')
 let log = console;
 
-const MongoModels = {}
+var MongoModels = {}
 
+/**
+ * 
+ * read the schemas in a dinamic way
+ */
 function loadModels() {
-    var path_ = fs.readFile(__dirname);
 
-    console.log('??????????????  dels ',path_ )
-	fs.readdirSync(path_).forEach(async (file) => {
-        console.log
-        try
-        {
+    var _models =  fs.readdirSync(__dirname + '/schemas');
 
-            let filename = path.basename(file, '.js')
-            let schema = require(path.resolve(path_, file))
+    for(let model in _models)
+    {
+        let file = _models[model];
+        console.log('in file loop ', file)
 
-            console.log('file namea : ', filename   , " schema ",  schema);
-            MongoModels[filename] = mongoose.model(filename, schema)
-        
-        }
-        catch (err)
-        {
-            log.error('Error loading route', file, ' error,', err);
-        }
-	})
+        let filename = path.basename(file, '.js')
+        let schema = require( './schemas/' + file);
+
+        //console.log('file name : ', filename   , " schema ",  schema);
+        MongoModels[filename] = mongoose.model(filename, schema)
+    }
+
 }
  
 async function start(url) {

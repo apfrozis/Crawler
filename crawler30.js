@@ -37,16 +37,27 @@ mongoose.connect(mongoDB, { useNewUrlParser: true });
 //Get the default connection
 var db = mongoose.connection;
 var GameModel = require('./data_layer/models/game');
-const Layer  =  require('./data_layer/datalayer.js');
 
+
+//define and use new datalayer..
+const Layer  =  require('./data_layer/datalayer.js');
 const _layer = new Layer()
 
 
-var modelToSave = {
-    username : "vitor viana",
-    password : "benfica"
-}
-_layer.abstractModel_save(modelToSave, () =>{});
+
+//example of save values
+setTimeout(function() {
+
+    console.log('save in the database...')
+    var modelToSave = {
+        username : "vitor viana",
+        password : "benfica"
+    }
+    _layer.abstractModel_save(modelToSave, () =>{});
+
+}, 1000 * 5)
+
+
 
 
 //Bind connection to error event (to get notification of connection errors)
