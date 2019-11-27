@@ -77,7 +77,47 @@ Database.prototype = {
 			cb(err, null)
 		}
 
-    }
+	},
+	findAndUpdateGame : function(input,  next )
+	{
+		try
+		{
+		
+			var _game =  Mongo.game(input);
+			_game.computeKey();
+
+			console.log(_game.game_key );
+
+			let key = {game_key: _game.game_key};
+
+			console.log('game 1', _game.save);
+			console.log('game 2', key);
+
+			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: true }, (err, doc) => {
+				if (err) {
+					console.log("Something wrong when updating data!");
+					next(err, null);
+				}else{
+					console.log('Document saved with sucess ', doc);
+					next(null, doc);
+				}
+			});
+			
+			// _game.findOneAndUpdate({game_key: _game.game_key}, input, {new: true}, (err, doc) => {
+			// 	if (err) {
+			// 		console.log("Something wrong when updating data!");
+			// 		next(err, null);
+			// 	}else{
+			// 		next(null, doc);
+			// 	}
+			// });
+		}
+		catch (err)
+		{
+			console.error('Error saving model ', err );
+			next(err, null)
+		}
+	}
     
 }
 

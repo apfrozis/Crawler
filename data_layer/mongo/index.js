@@ -35,6 +35,7 @@ async function start(url) {
             connectTimeoutMS: 10000 
         })
 
+        mongoose.set('useFindAndModify', false);
         loadModels()
 
         log.info('Connection to database established')
