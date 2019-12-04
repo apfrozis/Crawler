@@ -50,10 +50,16 @@ setTimeout(function() {
 
     console.log('save in the database...')
     var modelToSave = {
-        username : "vitor viana",
-        password : "benfica"
+        "href" : "trends.asp?league=argentina3",
+        "equipaCasa" : {
+            "nomeEquipa" : "Quilmes"
+        },
+        "equipaFora" : {
+            "nomeEquipa" : "Dep. Riestra"
+        },
+        "liga" : "Argentina - Primera Nacional Gr. B - benfica é o maior....."
     }
-    _layer.abstractModel_save(modelToSave, () =>{});
+    _layer.findAndUpdateGame(modelToSave, () =>{});
 
 }, 1000 * 5)
 
@@ -72,6 +78,8 @@ var corsOptions = {
 
   app.options('*', cors()) 
 
+
+crawl()
 app.get('/getstats',cors(corsOptions), function (req, res) {
     console.log("recebeu request")
     response = res;
@@ -384,11 +392,23 @@ function aplicarALgoritmo (game, next) {
     }
     
     if (over15Teste['teste']=='Passou'|| over25Teste['teste']=='Passou' || over35Teste['teste']=='Passou') {
+        //todo
         var gamemodel = new GameModel(game);
-        gamemodel.save(function(err) {
-            if (err) throw err;
-            console.log('User saved successfully!');
+
+        _layer.findAndUpdateGame(game, (err, data) =>
+        {
+            if (err){
+                console.error('Error save model');
+            }
+            else{
+                console.log('User saved successfully!');
+            }
         });
+
+        // gamemodel.save(function(err) {
+        //     if (err) throw err;
+        //     console.log('User saved successfully!');
+        // });
         listaJogosCumpremCondicao.push(game)
     }
         

@@ -10,6 +10,9 @@ var DIA_JOGO = 0;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
+//muda isto seu sacana....
+var HREF = "trends.asp?league=egypt";
+
 console.log('process.env.DATABASE_URL : ', process.env.DATABASE_URL)
 
 var numeroJogosDoDia = 0;
@@ -19,14 +22,6 @@ var listaJogosCumpremCondicao = [];
 //Import the mongoose module
 var mongoose = require('mongoose');
 
-//Set up default mongoose connection
-var mongoDB = 'mongodb://heroku_6b7t2wg0:jo3rl5r1o5n5c5ltcfrt01ljud@ds345028.mlab.com:45028/heroku_6b7t2wg0';
-mongoose.connect(mongoDB, { useNewUrlParser: true });
-
-//Get the default connection
-var db = mongoose.connection;
-var GameModel = require('./data_layer/models/game');
-
 
 //define and use new datalayer..
 const Layer  =  require('./data_layer/datalayer.js');
@@ -34,23 +29,7 @@ const _layer = new Layer()
 
 
 
-//example of save values
-setTimeout(function() {
 
-    console.log('save in the database...')
-    var modelToSave = {
-        username : "vitor viana",
-        password : "benfica"
-    }
-    _layer.abstractModel_save(modelToSave, () =>{});
-
-}, 1000 * 5)
-
-
-
-
-//Bind connection to error event (to get notification of connection errors)
-db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 crawl();
 
@@ -87,6 +66,46 @@ function crawl() {
                 }catch(e){
                     resultado = "Ainda não existe resultado para o presente jogo"
                 }
+
+                 //todo vviama
+                 /*
+                 1. Find do game pela key
+                 2. calcular satisfaç\ao das condi~\oes de acordo com o resultado
+                 3. guardar na bd
+                 */
+
+
+                 //alfonsinho
+                 // arranjar o href dinmaci para calcular as keys....
+
+
+
+                var game = {
+                    equipaCasa : {
+                        nomeEquipa : nome_equipa_casa
+                    },
+                    equipaFora : {
+                        nomeEquipa : nome_equipa_fora
+                    },
+                    href : HREF,
+                    gameHistory : {
+                        totalScore : resultado,
+                        homeTotalGoals : golos_equipa_casa,
+                        awayTotalGoals : golos_equipa_fora,
+                    }
+
+                }
+
+                _layer.findAndUpdateGame(game, (err, data) =>
+                {
+                    if (err){
+                        console.error('Error save model');
+                    }
+                    else{
+                        console.log('User saved successfully!');
+                    }
+                });
+
                 console.log("Liga:", nomeLiga)
                 console.log("Date:", today)
                 console.log("Result:" + resultado)
