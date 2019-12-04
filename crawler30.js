@@ -79,6 +79,7 @@ app.get('/getstats',cors(corsOptions), function (req, res) {
     //res.send([new Game('equipa 1', 'equipa 2', 'liga', 'href'),new Game('equipa 2', 'equipa 2', 'liga', 'href')]);
 
 })
+crawl();
 
 var server = app.listen(8080, function () {
    var host = server.address().address
@@ -119,7 +120,6 @@ function crawl() {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var today = new Date()
                     today.setDate(today.getDate() + (DIA_JOGO-1));
-                    debugger;
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
                     checkstatsGame(game, function(err, data){
@@ -401,6 +401,9 @@ function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,
     let condicao1 = false;
      let condicao2 = false;
      let condicao3 = false;
+     if(game.href=="trends.asp?league=iran"){
+         debugger;
+     }
      //Condição da equipa da casa e fora ter média de golos superior à media de golos da liga
      if (parseInt(equipaCasaLiga) >= parseInt(mediaLiga) && parseInt(equipaForaLiga) >= parseInt(mediaLiga)) {
              condicao1 = true;
