@@ -29,9 +29,10 @@ const _layer = new Layer()
 
 
 
+setTimeout(() => {
+    crawl(); 
+}, 1000*2);
 
-
-crawl();
 
 function crawl() {
     numeroJogosDoDia = 0;
