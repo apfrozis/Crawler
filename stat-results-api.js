@@ -57,9 +57,26 @@ var corsOptions = {
 
 app.get('/getstats',cors(corsOptions), function (req, res) {
     debugger;
-    req.query.search === 'red'  // true
-    console.log("recebeu request")
-    response = res;
+    // req.query.search
+
+    console.log('Query search ' , req.query.search)
+    let criteria = {
+        gameDate : new Date(req.query.search)
+    }
+    _layer.findGameByCriteria(criteria, (err, data ) =>{
+
+        if(err){
+            res.status(500).send('Something broke!')
+        }
+        else{
+            res.status(200).json({data : data})
+
+        }
+
+    });
+
+    
+
 })
 
 app.get('/getdashboardmetrics',cors(corsOptions), function (req, res) {
@@ -68,6 +85,8 @@ app.get('/getdashboardmetrics',cors(corsOptions), function (req, res) {
     console.log("recebeu request")
     response = res;
 })
+
+
 
 var server = app.listen(8080, function () {
    var host = server.address().address

@@ -1,5 +1,7 @@
 var Mongo;
 
+const moment = require('moment')
+
 var Database = function(){
 	Mongo = require('./mongo');
 }
@@ -117,6 +119,46 @@ Database.prototype = {
 			console.error('Error saving model ', err );
 			next(err, null)
 		}
+	},
+	findGameByCriteria: function(criteria, next ) {
+
+		try
+		{
+		
+			// var _game =  Mongo.game(input);
+			//_game.computeKey();
+
+			//console.log(_game.game_key );
+			//let key = {game_key: _game.game_key};
+
+			
+			const today = moment(criteria.gameDate).startOf('day')
+
+			let filter = {
+				gameDate : {
+					$gte: today.toDate(),
+					$lte: moment(today).endOf('day').toDate()
+				}
+			  }
+
+			Mongo.game.find(filter, (err, data)  => 
+			{
+				if(err){
+					next(err, null);
+				}
+				else{
+					next(null, data);
+				}
+			});
+		
+		}
+		catch (err)
+		{
+			console.error('Error saving model ', err );
+			next(err, null)
+		}
+
+
 	}
     
 }
