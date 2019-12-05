@@ -62,6 +62,13 @@ app.get('/getstats',cors(corsOptions), function (req, res) {
     response = res;
 })
 
+app.get('/getdashboardmetrics',cors(corsOptions), function (req, res) {
+    debugger;
+    req.query.search === 'red'  // true
+    console.log("recebeu request")
+    response = res;
+})
+
 var server = app.listen(8080, function () {
    var host = server.address().address
    var port = server.address().port
