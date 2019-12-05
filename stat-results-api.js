@@ -69,7 +69,7 @@ app.get('/getstats',cors(corsOptions), function (req, res) {
             res.status(500).send('Something broke!')
         }
         else{
-            res.status(200).json({data : data})
+            res.status(200).json({total_game :data.length,   data : data})
 
         }
 
