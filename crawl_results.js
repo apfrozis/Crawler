@@ -54,6 +54,7 @@ function crawl() {
                     $ligaElemento = $($tableChild.parent().prevAll().find('.parent'))
                 }
                 var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
+                var linkLiga = $ligaElemento.find('a')[0].attribs.href.replace("latest", "trends");
                 var today = new Date()
                 today.setDate(today.getDate() + (DIA_JOGO-1));
                 var nome_equipa_casa = tableGames[i].childNodes[0].data
@@ -87,7 +88,7 @@ function crawl() {
                     equipaFora : {
                         nomeEquipa : nome_equipa_fora
                     },
-                    href : HREF,
+                    href : linkLiga,
                     gameHistory : {
                         totalScore : resultado,
                         homeTotalGoals : golos_equipa_casa,
@@ -99,7 +100,7 @@ function crawl() {
                 _layer.findAndUpdateGame(game, (err, data) =>
                 {
                     if (err){
-                        console.error('Error save model');
+                        console.error('Error save model' , err);
                     }
                     else{
                         console.log('User saved successfully!');
