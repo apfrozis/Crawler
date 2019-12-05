@@ -49,7 +49,7 @@ gameModelSchema.methods.computeKey = function(){
   let homeTeam = this.equipaCasa.nomeEquipa.toLowerCase().replace(/\s/g, '') ;
   let awayTeam = this.equipaFora.nomeEquipa.toLowerCase().replace(/\s/g, '') ;
 
-  this.game_key = league + '_' + homeTeam + '_' + awayTeam + '_' + today.getDay() + today.getMonth() + today.getFullYear() ;
+  this.game_key = league + '_' + homeTeam + '_' + awayTeam + '_' + gameDate.getDay() + gameDate.getMonth() + gameDate.getFullYear() ;
 
   console.log('after compute the key ', this);
   return this.game_key  ;

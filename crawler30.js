@@ -8,7 +8,7 @@ const async = require('async');
 
 
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 2;
+var DIA_JOGO = 0;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
