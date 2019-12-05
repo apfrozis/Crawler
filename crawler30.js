@@ -54,7 +54,7 @@ setTimeout(function() {
         },
         "liga" : "Argentina - Primera Nacional Gr. B - benfica é o maior....."
     }
-    _layer.findAndUpdateGame(modelToSave, () =>{});
+    //_layer.findAndUpdateGame(modelToSave, () =>{});
 
 }, 1000 * 5)
 
@@ -365,7 +365,7 @@ function aplicarALgoritmo (game, next) {
         //todo
         var gamemodel = new GameModel(game);
 
-        _layer.findAndUpdateGame(game, (err, data) =>
+        _layer.findAndUpdateOrCreateGame(game, (err, data) =>
         {
             if (err){
                 console.error('Error save model');
