@@ -25,6 +25,7 @@ var gameModelSchema = new Schema({
     satify35 : Boolean 
 
   },
+  
   created:
 	{
 		type: Date,
