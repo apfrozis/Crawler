@@ -42,7 +42,7 @@ gameModelSchema.methods.computeKey = function(){
 
   console.log('before compute the key ', this);
 
-  let today = new Date();
+  let today = new Date(this.gameDate);
   
 
   let league = this.href.split('=').length > 0 ? this.href.split('=')[1] : 'NA';
