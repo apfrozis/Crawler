@@ -92,8 +92,8 @@ Database.prototype = {
 
 			let key = {game_key: _game.game_key};
 
-			console.log('game 1', _game.save);
-			console.log('game 2', key);
+			// console.log('game 1', _game.save);
+			// console.log('game 2', key);
 
 			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: true }, (err, doc) => {
 				if (err) {
@@ -135,6 +135,10 @@ Database.prototype = {
 			console.log('game 1', _game.save);
 			console.log('game 2', key);
 
+			//delete the keys for equipaCasa and equipaFora
+			delete input.equipaCasa;
+			delete input.equipaFora;
+
 			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: false }, (err, doc) => {
 				if (err) {
 					console.log("Something wrong when updating data!");
@@ -165,21 +169,35 @@ Database.prototype = {
 		try
 		{
 		
-			// var _game =  Mongo.game(input);
+			 //var _game =  Mongo.game(input);
 			//_game.computeKey();
 
 			//console.log(_game.game_key );
 			//let key = {game_key: _game.game_key};
+			let filter = {};
 
 			
-			const today = moment(criteria.gameDate).startOf('day')
-
-			let filter = {
-				gameDate : {
-					$gte: today.toDate(),
-					$lte: moment(today).endOf('day').toDate()
+			if ( criteria && criteria.gameDate)
+			{
+				const today = moment(criteria.gameDate).startOf('day')
+				filter = {
+					gameDate : {
+						$gte: today.toDate(),
+						$lte: moment(today).endOf('day').toDate()
+					}
 				}
-			  }
+			}
+
+			if(criteria && criteria.isGameKey)
+			{
+				var _game =  Mongo.game(criteria);
+				_game.computeKey();
+
+				//console.log(_game.game_key );
+				filter = {game_key: _game.game_key};
+				delete filter.gameDate;
+			}
+			
 
 			Mongo.game.find(filter, (err, data)  => 
 			{
