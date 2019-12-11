@@ -35,6 +35,7 @@ setTimeout(() => {
 
 
 function crawl() {
+
     numeroJogosDoDia = 0;
     numeroJogosDoDiaAnalisados = 0;
     numeroDeJogosComLigaNaoSuportada = 0;
@@ -77,11 +78,6 @@ function crawl() {
                  */
 
 
-                 //alfonsinho
-                 // arranjar o href dinmaci para calcular as keys....
-
-
-
                 var game = {
                     equipaCasa : {
                         nomeEquipa : nome_equipa_casa
@@ -98,21 +94,20 @@ function crawl() {
 
                 }
 
-                _layer.findAndUpdateGame(game, (err, data) =>
+                //vai a db buscar o jogo pela key e depois vou preencher
+                // se 
+                findGameSavedAndSetResult(game, (err, data ) => 
                 {
-                    if (err){
-                        console.error('Error save model' , err);
-                    }
-                    else{
-                        console.log('User saved successfully!');
-                    }
-                });
+                    console.log("Liga:", nomeLiga)
+                    console.log("Date:", today)
+                    console.log("Result:" + resultado)
+                    i+=2;
+                    callback ()
 
-                console.log("Liga:", nomeLiga)
-                console.log("Date:", today)
-                console.log("Result:" + resultado)
-                i+=2;
-                callback ()
+                });
+            
+
+               
 
         },
         function (err){
@@ -120,6 +115,48 @@ function crawl() {
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
         })
     });
+}
+
+function findGameSavedAndSetResult(game, next)
+{
+
+    async.waterfall([
+        function(next)
+        {
+             game.isGameKey = true;
+            _layer.findGameByCriteria(game, (err, data) =>
+            {
+                next(err, data);
+            });
+
+        },
+        function(prevSavedGame, next)
+        {
+             //preencher para 1.5
+             prevSavedGame.gameHistory.satify15 = prevSavedGame.over15standardDeviation && game.gameHistory.totalScore > 1.5;
+             //preencher para 2.5
+             prevSavedGame.gameHistory.satify25 = prevSavedGame.over25standardDeviation && game.gameHistory.totalScore > 2.5;
+                         //preencher para 3.5
+             prevSavedGame.gameHistory.satify35 = prevSavedGame.over35standardDeviation && game.gameHistory.totalScore > 3.5;
+
+            _layer.findAndUpdateGame(game, (err, data) =>
+            {
+                if (err){
+                    console.error('Error save model' , err);
+                    next(err, null)
+                }
+                else{
+                    console.log('User saved successfully!');
+                    next(null, data)
+                }
+            });
+
+        },
+
+    ], function(err, data) {
+            next(err, data)
+    });
+
 }
 
 function visitPage(url, game, callback) {
