@@ -86,6 +86,7 @@ function crawl() {
                         nomeEquipa : nome_equipa_fora
                     },
                     href : linkLiga,
+                    gameDate : today,
                     gameHistory : {
                         totalScore : resultado,
                         homeTotalGoals : golos_equipa_casa,
@@ -132,13 +133,19 @@ function findGameSavedAndSetResult(game, next)
         },
         function(prevSavedGame, next)
         {
+            console.log('saved game ', prevSavedGame)
+
+            if(prevSavedGame && prevSavedGame.length > 0)
+            {
+             prevSavedGame = prevSavedGame[0];
              //preencher para 1.5
              prevSavedGame.gameHistory.satify15 = prevSavedGame.over15standardDeviation && game.gameHistory.totalScore > 1.5;
              //preencher para 2.5
              prevSavedGame.gameHistory.satify25 = prevSavedGame.over25standardDeviation && game.gameHistory.totalScore > 2.5;
-                         //preencher para 3.5
+             //preencher para 3.5
              prevSavedGame.gameHistory.satify35 = prevSavedGame.over35standardDeviation && game.gameHistory.totalScore > 3.5;
 
+            }
             _layer.findAndUpdateGame(game, (err, data) =>
             {
                 if (err){

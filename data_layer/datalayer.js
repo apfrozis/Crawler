@@ -92,8 +92,8 @@ Database.prototype = {
 
 			let key = {game_key: _game.game_key};
 
-			console.log('game 1', _game.save);
-			console.log('game 2', key);
+			// console.log('game 1', _game.save);
+			// console.log('game 2', key);
 
 			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: true }, (err, doc) => {
 				if (err) {
@@ -195,6 +195,7 @@ Database.prototype = {
 
 				//console.log(_game.game_key );
 				filter = {game_key: _game.game_key};
+				delete filter.gameDate;
 			}
 			
 
