@@ -69,8 +69,42 @@ app.get('/getstats',cors(corsOptions), function (req, res) {
             res.status(500).send('Something broke!')
         }
         else{
-            res.status(200).json({total_game :data.length,   data : data})
+            let best15 = 0, best25 = 0, best35 = 0;
+            let temp ;
+            let bests = {
+                best15 : {},
+                best25 : {},
+                best35 : {}
+            }
+            // descending order
+            async.sortBy(data, function(item, callback)
+            {
+                if(item.over25standardDeviation > best25){
+                    temp =  JSON.parse( JSON.stringify(item));
+                    delete temp.equipaCasa;
+                    delete temp.equipaFora;
+                    bests.best25 = temp;
+                }
+                if(item.over35standardDeviation > best35){
+                    temp =  JSON.parse( JSON.stringify(item));
+                    delete temp.equipaCasa;
+                    delete temp.equipaFora;
+                    bests.best35 = temp;
+                }
+                if(item.over15standardDeviation > best15){
+                    temp =  JSON.parse( JSON.stringify(item));
+                    delete temp.equipaCasa;
+                    delete temp.equipaFora;
+                    bests.best15 = temp;
+                }
 
+                callback(null, item.over25standardDeviation * -1 );
+
+            }, function(err,result) 
+            {
+                res.status(200).json({total_game :data.length, bests :  bests , data : data})
+            });
+            
         }
 
     });
