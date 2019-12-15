@@ -56,7 +56,7 @@ var corsOptions = {
   app.options('*', cors()) 
 
 app.get('/getstats',cors(corsOptions), function (req, res) {
-    debugger;
+
     // req.query.search
 
     console.log('Query search ' , req.query.search)

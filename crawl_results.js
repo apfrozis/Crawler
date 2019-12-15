@@ -79,6 +79,7 @@ function crawl() {
 
 
                 var game = {
+                    gameDate: today,
                     equipaCasa : {
                         nomeEquipa : nome_equipa_casa
                     },
