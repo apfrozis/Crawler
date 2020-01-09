@@ -8,7 +8,7 @@ const async = require('async');
 
 
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 2;
+var DIA_JOGO = 1;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -94,7 +94,8 @@ function crawl() {
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href
                 if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") &&
                  !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
-                  !linkLiga.includes("eurou19qual") && !linkLiga.includes("cup-italy1") && !linkLiga.includes("yleague")) {
+                  !linkLiga.includes("eurou19qual") && !linkLiga.includes("cup-italy1") && !linkLiga.includes("yleague") && !linkLiga.includes("cup-france2") &&
+                  !linkLiga.includes("cup-spain2")  ) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var today = new Date()
                     today.setDate(today.getDate() + (DIA_JOGO-1));

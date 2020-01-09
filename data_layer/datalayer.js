@@ -124,7 +124,7 @@ Database.prototype = {
 	{
 		try
 		{
-		
+
 			var _game =  Mongo.game(input);
 			_game.computeKey();
 
@@ -165,6 +165,60 @@ Database.prototype = {
 		}
 	},
 	findGameByCriteria: function(criteria, next ) {
+
+		try
+		{
+		
+			 //var _game =  Mongo.game(input);
+			//_game.computeKey();
+
+			//console.log(_game.game_key );
+			//let key = {game_key: _game.game_key};
+			let filter = {};
+
+			
+			if ( criteria && criteria.gameDate)
+			{
+				const today = moment(criteria.gameDate).startOf('day')
+				filter = {
+					gameDate : {
+						$gte: today.toDate(),
+						$lte: moment(today).endOf('day').toDate()
+					}
+				}
+			}
+
+			if(criteria && criteria.isGameKey)
+			{
+				var _game =  Mongo.game(criteria);
+				_game.computeKey();
+
+				//console.log(_game.game_key );
+				filter = {game_key: _game.game_key};
+				delete filter.gameDate;
+			}
+			
+
+			Mongo.game.find(filter, (err, data)  => 
+			{
+				if(err){
+					next(err, null);
+				}
+				else{
+					next(null, data);
+				}
+			});
+		
+		}
+		catch (err)
+		{
+			console.error('Error saving model ', err );
+			next(err, null)
+		}
+
+
+	},
+	runResultsForAllGames: function() {
 
 		try
 		{

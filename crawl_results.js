@@ -140,12 +140,11 @@ function findGameSavedAndSetResult(game, next)
             {
              prevSavedGame = prevSavedGame[0];
              //preencher para 1.5
-             prevSavedGame.gameHistory.satify15 = prevSavedGame.over15standardDeviation && game.gameHistory.totalScore > 1.5;
+             game.gameHistory.satify15 = prevSavedGame.over15standardDeviation && game.gameHistory.totalScore > 1.5;
              //preencher para 2.5
-             prevSavedGame.gameHistory.satify25 = prevSavedGame.over25standardDeviation && game.gameHistory.totalScore > 2.5;
+             game.gameHistory.satify25 = prevSavedGame.over25standardDeviation && game.gameHistory.totalScore > 2.5;
              //preencher para 3.5
-             prevSavedGame.gameHistory.satify35 = prevSavedGame.over35standardDeviation && game.gameHistory.totalScore > 3.5;
-
+             game.gameHistory.satify35 = prevSavedGame.over35standardDeviation && game.gameHistory.totalScore > 3.5;
             }
             _layer.findAndUpdateGame(game, (err, data) =>
             {
