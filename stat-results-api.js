@@ -23,8 +23,8 @@ var GameModel = require('./data_layer/models/game');
 
 
 //define and use new datalayer..
-const Layer  =  require('./data_layer/datalayer.js');
-const _layer = new Layer()
+const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalayer.js');
+const _layer = new Database()
 
 
 

@@ -120,7 +120,7 @@ Database.prototype = {
 			next(err, null)
 		}
 	},
-	findAndUpdateGame : function(input,  next )
+	findAndUpdateGame : function(input, upsert_e,  next )
 	{
 		try
 		{
@@ -139,7 +139,7 @@ Database.prototype = {
 			delete input.equipaCasa;
 			delete input.equipaFora;
 
-			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: false }, (err, doc) => {
+			Mongo.game.findOneAndUpdate(key,  input,{new: true, upsert: upsert_e }, (err, doc) => {
 				if (err) {
 					console.log("Something wrong when updating data!");
 					next(err, null);
@@ -198,7 +198,6 @@ Database.prototype = {
 				delete filter.gameDate;
 			}
 			
-
 			Mongo.game.find(filter, (err, data)  => 
 			{
 				if(err){
@@ -274,8 +273,45 @@ Database.prototype = {
 	}
     
 }
+var findAndUpdateGameForPrevious = async function(input, upsert_e)
+{
+	try
+	{
+
+		var _game =  Mongo.game(input);
+		_game.computeKey();
+
+		console.log(_game.game_key );
+
+		let key = {game_key: _game.game_key};
+
+		console.log('game 1', _game.save);
+		console.log('game 2', key);
+
+		//delete the keys for equipaCasa and equipaFora
+		delete input.equipaCasa;
+		delete input.equipaFora;
+
+		let doc = await Mongo.game.findOneAndUpdate(key, input,{new: true, upsert: upsert_e }).exec()
+
+		return doc
+		
+		// _game.findOneAndUpdate({game_key: _game.game_key}, input, {new: true}, (err, doc) => {
+		// 	if (err) {
+		// 		console.log("Something wrong when updating data!");
+		// 		next(err, null);
+		// 	}else{
+		// 		next(null, doc);
+		// 	}
+		// });
+	}
+	catch (err)
+	{
+		console.error('Error saving model ', err );
+		next(err, null)
+	}
+}
 
 
 
-
-	exports = module.exports =  Database;
+	exports = module.exports =  {Database,findAndUpdateGameForPrevious};

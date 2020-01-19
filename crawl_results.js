@@ -24,8 +24,8 @@ var mongoose = require('mongoose');
 
 
 //define and use new datalayer..
-const Layer  =  require('./data_layer/datalayer.js');
-const _layer = new Layer()
+const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalayer.js');
+const _layer = new Database()
 
 
 
@@ -146,7 +146,7 @@ function findGameSavedAndSetResult(game, next)
              //preencher para 3.5
              game.gameHistory.satify35 = prevSavedGame.over35standardDeviation && game.gameHistory.totalScore > 3.5;
             }
-            _layer.findAndUpdateGame(game, (err, data) =>
+            _layer.findAndUpdateGame(game,false, (err, data) =>
             {
                 if (err){
                     console.error('Error save model' , err);

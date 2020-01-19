@@ -23,9 +23,9 @@ var gameModelSchema = new Schema({
     totalScore : String, 
     homeTotalGoals : String, 
     awayTotalGoals : String,
-    satify15 : Boolean, 
-    satify25 : Boolean, 
-    satify35 : Boolean 
+    satify15 : String, 
+    satify25 : String, 
+    satify35 : String 
 
   },
   

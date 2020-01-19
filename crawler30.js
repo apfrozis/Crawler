@@ -8,7 +8,7 @@ const async = require('async');
 
 
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 1;
+var DIA_JOGO = 2;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -35,8 +35,8 @@ var GameModel = require('./data_layer/models/game');
 
 
 //define and use new datalayer..
-const Layer  =  require('./data_layer/datalayer.js');
-const _layer = new Layer()
+const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalayer.js');
+const _layer = new Database()
 
 
 
@@ -101,6 +101,9 @@ function crawl() {
                     today.setDate(today.getDate() + (DIA_JOGO-1));
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
+                    debugger;
+                    //command
+                    //$($('#content').find('.steam')).siblings().find('.button')
                     checkstatsGame(game, function(err, data){
                         i+=2;
                         callback (err, data)
@@ -364,28 +367,41 @@ function aplicarALgoritmo (game, next) {
     
     if (over15Teste['teste']=='Passou'|| over25Teste['teste']=='Passou' || over35Teste['teste']=='Passou') {
         //todo
-        var gamemodel = new GameModel(game);
+        statsForAlgorithmSecondFase(game, function(updatedGame){
 
-        _layer.findAndUpdateOrCreateGame(game, (err, data) =>
-        {
-            if (err){
-                console.error('Error save model');
-            }
-            else{
-                console.log('User saved successfully!');
-            }
-        });
-
-        // gamemodel.save(function(err) {
-        //     if (err) throw err;
-        //     console.log('User saved successfully!');
-        // });
-        listaJogosCumpremCondicao.push(game)
+            _layer.findAndUpdateOrCreateGame(updatedGame, (err, data) =>
+            {
+                if (err){
+                    console.error('Error save model');
+                }
+                else{
+                    console.log('User saved successfully!');
+                }
+            });
+    
+            // gamemodel.save(function(err) {
+            //     if (err) throw err;
+            //     console.log('User saved successfully!');
+            // });
+            listaJogosCumpremCondicao.push(game)
+        })
     }
         
         next();
        
     
+}
+
+function statsForAlgorithmSecondFase(game, next){
+    visitPage(SITE_URL + game.gameStatshref, game, function (game, body) {
+        console.log("--------------------------Next game---------------------------")
+        if (body.toString().includes("ECONNRESET") || body.toString().includes("Error")) {
+            console.log("Jogo com resposta com erro")
+            next()
+        } else {
+            
+        }
+    })
 }
 
 function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){
