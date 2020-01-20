@@ -101,7 +101,11 @@ function crawl() {
                     today.setDate(today.getDate() + (DIA_JOGO-1));
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
-                    debugger;
+                    if($(tableGames[i]).siblings().find('.button').length==0){
+                        game.gameStatshref = $("#content").find('.button')[1].attribs.href
+                    }else{
+                        game.gameStatshref = $(tableGames[i]).siblings().find('.button')[0].attribs.href
+                    }
                     //command
                     //$($('#content').find('.steam')).siblings().find('.button')
                     checkstatsGame(game, function(err, data){
@@ -384,22 +388,30 @@ function aplicarALgoritmo (game, next) {
             //     console.log('User saved successfully!');
             // });
             listaJogosCumpremCondicao.push(game)
+            next();
         })
+    } else{
+        next()
     }
         
-        next();
+        
        
     
 }
 
 function statsForAlgorithmSecondFase(game, next){
+    console.log("GOing to visit:"+SITE_URL + game.gameStatshref)
     visitPage(SITE_URL + game.gameStatshref, game, function (game, body) {
-        console.log("--------------------------Next game---------------------------")
         if (body.toString().includes("ECONNRESET") || body.toString().includes("Error")) {
             console.log("Jogo com resposta com erro")
             next()
         } else {
-            
+            // Parse the document body
+            var $ = cheerio.load(body);
+
+            //$('.five').text('Goals scored per match')
+            //$('.five').text('Goals conceded per match')
+            debugger;
         }
     })
 }
@@ -408,9 +420,6 @@ function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,
     let condicao1 = false;
      let condicao2 = false;
      let condicao3 = false;
-     if(game.href=="trends.asp?league=iran"){
-         debugger;
-     }
      //Condição da equipa da casa e fora ter média de golos superior à media de golos da liga
      if (parseInt(equipaCasaLiga) >= parseInt(mediaLiga) && parseInt(equipaForaLiga) >= parseInt(mediaLiga)) {
              condicao1 = true;
