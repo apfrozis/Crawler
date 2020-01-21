@@ -410,7 +410,8 @@ function statsForAlgorithmSecondFase(game, next){
             var $ = cheerio.load(body);
 
             //$('.five').text('Goals scored per match')
-            //$('.five').text('Goals conceded per match')
+            //$('.five').text('Goals conceded per match')//$('.seven').text('Goals scored per match')[0].parent.parentNode.parentNode.children[1].childNodes[1].children[3].children[0].data
+
             debugger;
         }
     })
