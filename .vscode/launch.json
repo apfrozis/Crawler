@@ -8,8 +8,8 @@
             "type": "node",
             "request": "launch",
             "name": "Launch Program",
-            "program": "${workspaceFolder}/crawl_results.js"
-            //"program": "${workspaceFolder}/crawler30.js"
+            //"program": "${workspaceFolder}/crawl_results.js"
+            "program": "${workspaceFolder}/crawler30.js"
         }
     ]
 }
