@@ -95,7 +95,8 @@ function crawl() {
                 if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") &&
                  !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
                   !linkLiga.includes("eurou19qual") && !linkLiga.includes("cup-italy1") && !linkLiga.includes("yleague") && !linkLiga.includes("cup-france2") &&
-                  !linkLiga.includes("cup-spain2")  && !linkLiga.includes("cup-netherlands1") && !linkLiga.includes("cup-belgium1")) {
+                  !linkLiga.includes("cup-spain2")  && !linkLiga.includes("cup-netherlands1") && !linkLiga.includes("cup-belgium1") &&
+                  !linkLiga.includes("cup-turkey1")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var today = new Date()
                     today.setDate(today.getDate() + (DIA_JOGO-1));
