@@ -416,6 +416,7 @@ function statsForAlgorithmSecondFase(game, next){
             //$('.five').text('Goals conceded per match')//$('.seven').text('Goals scored per match')[0].parent.parentNode.parentNode.children[1].childNodes[1].children[3].children[0].data
 //$('.trow3') 42 e 43
 //$(this).text().trim().includes('Home wins');
+//$('tr.trow3:contains("goals scored per match")')
             debugger;
         }
     })
