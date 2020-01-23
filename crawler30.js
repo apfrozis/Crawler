@@ -417,7 +417,13 @@ function statsForAlgorithmSecondFase(game, next){
 //$('.trow3') 42 e 43
 //$(this).text().trim().includes('Home wins');
 //$('tr.trow3:contains("goals scored per match")')
-            debugger;
+debugger;
+            game.equipaCasa.goalsScoredPerMatchHome = $('tr.trow3:contains("goals scored per match")')[0]
+            game.equipaFora.goalsConcededPerMatchAway = $('tr.trow3:contains("goals scored per match")')[1]
+            game.equipaCasa.goalsConcededPerMatchHome = $('tr.trow3:contains("goals conceded per match")')[0]
+            game.equipaFora.goalsScoredPerMatchAway = $('tr.trow3:contains("goals conceded per match")')[1]
+            game.goalsScoredPlusConceded = min(game.equipaCasa.goalsScoredPerMatchHome, game.equipaFora.goalsConcededPerMatchAway) +
+                                           min(game.equipaCasa.goalsConcededPerMatchHome, game.equipaFora.goalsScoredPerMatchAway)
         }
     })
 }
