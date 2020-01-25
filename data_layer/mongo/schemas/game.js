@@ -18,6 +18,8 @@ var gameModelSchema = new Schema({
   over15standardDeviation: String,
   over25standardDeviation : String,
   over35standardDeviation : String,
+  gameStatshref: String,
+  goalsScoredPlusConceded: String,
 
   gameHistory : {
     totalScore : String, 

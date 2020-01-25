@@ -103,7 +103,13 @@ function crawl() {
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
                     if($(tableGames[i]).siblings().find('.button').length==0){
-                        game.gameStatshref = $("#content").find('.button')[1].attribs.href
+                            //$('tr:contains("Stats")')[0].children[2]
+                            //$($('tr:contains("Stats")')[0]).css('rowspan','2')
+                        game.gameStatshref = $($('tr:contains("Stats")')[0]).css('rowspan','2')[0].children[2].children[1].attribs.href
+                        if(!game.gameStatshref.includes(game.equipaCasa.nomeEquipa.split(' ')[0].toLowerCase())){
+                            game.gameStatshref = undefined
+                        }
+                        i+=2;
                     }else{
                         game.gameStatshref = $(tableGames[i]).siblings().find('.button')[0].attribs.href
                     }
@@ -403,6 +409,7 @@ function aplicarALgoritmo (game, next) {
 }
 
 function statsForAlgorithmSecondFase(game, next){
+    if(game.gameStatshref!=undefined){
     console.log("GOing to visit:"+SITE_URL + game.gameStatshref)
     visitPage(SITE_URL + game.gameStatshref, game, function (game, body) {
         if (body.toString().includes("ECONNRESET") || body.toString().includes("Error")) {
@@ -414,18 +421,23 @@ function statsForAlgorithmSecondFase(game, next){
 
             //$('.five').text('Goals scored per match')
             //$('.five').text('Goals conceded per match')//$('.seven').text('Goals scored per match')[0].parent.parentNode.parentNode.children[1].childNodes[1].children[3].children[0].data
-//$('.trow3') 42 e 43
-//$(this).text().trim().includes('Home wins');
-//$('tr.trow3:contains("goals scored per match")')
-debugger;
-            game.equipaCasa.goalsScoredPerMatchHome = $('tr.trow3:contains("goals scored per match")')[0]
-            game.equipaFora.goalsConcededPerMatchAway = $('tr.trow3:contains("goals scored per match")')[1]
-            game.equipaCasa.goalsConcededPerMatchHome = $('tr.trow3:contains("goals conceded per match")')[0]
-            game.equipaFora.goalsScoredPerMatchAway = $('tr.trow3:contains("goals conceded per match")')[1]
-            game.goalsScoredPlusConceded = min(game.equipaCasa.goalsScoredPerMatchHome, game.equipaFora.goalsConcededPerMatchAway) +
-                                           min(game.equipaCasa.goalsConcededPerMatchHome, game.equipaFora.goalsScoredPerMatchAway)
+            //$('.trow3') 42 e 43
+            //$(this).text().trim().includes('Home wins');
+            //$('tr.trow3:contains("goals scored per match")')
+            try {
+                game.equipaCasa.goalsScoredPerMatchHome = parseFloat($('tr.trow3:contains("goals scored per match")')[0].childNodes[2].children[0].data.trim())
+                game.equipaFora.goalsScoredPerMatchAway = parseFloat($('tr.trow3:contains("goals scored per match")')[1].childNodes[2].children[0].data.trim())
+                game.equipaFora.goalsConcededPerMatchAway = parseFloat($('tr.trow3:contains("goals conceded per match")')[0].childNodes[2].children[0].data.trim())
+                game.equipaCasa.goalsConcededPerMatchHome = parseFloat($('tr.trow3:contains("goals conceded per match")')[1].childNodes[2].children[0].data.trim())
+                game.goalsScoredPlusConceded = Math.min(game.equipaCasa.goalsScoredPerMatchHome, game.equipaFora.goalsConcededPerMatchAway) +
+                                               Math.min(game.equipaCasa.goalsConcededPerMatchHome, game.equipaFora.goalsScoredPerMatchAway)
+            }catch(e){
+                debugger;
+            }
+            next(game)
         }
     })
+    }
 }
 
 function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){
