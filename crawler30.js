@@ -430,8 +430,8 @@ function statsForAlgorithmSecondFase(game, next){
                 game.equipaFora.goalsScoredPerMatchAway = parseFloat($('tr.trow3:contains("goals scored per match")')[1].childNodes[2].children[0].data.trim())
                 game.equipaFora.goalsConcededPerMatchAway = parseFloat($('tr.trow3:contains("goals conceded per match")')[0].childNodes[2].children[0].data.trim())
                 game.equipaCasa.goalsConcededPerMatchHome = parseFloat($('tr.trow3:contains("goals conceded per match")')[1].childNodes[2].children[0].data.trim())
-                game.goalsScoredPlusConceded = Math.min(game.equipaCasa.goalsScoredPerMatchHome, game.equipaFora.goalsConcededPerMatchAway) +
-                                               Math.min(game.equipaCasa.goalsConcededPerMatchHome, game.equipaFora.goalsScoredPerMatchAway)
+                game.goalsScoredPlusConceded = parseFloat((Math.min(game.equipaCasa.goalsScoredPerMatchHome, game.equipaFora.goalsConcededPerMatchAway) +
+                                               Math.min(game.equipaCasa.goalsConcededPerMatchHome, game.equipaFora.goalsScoredPerMatchAway)).toFixed(2));
             }catch(e){
                 debugger;
             }
