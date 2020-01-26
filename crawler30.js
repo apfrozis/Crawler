@@ -8,7 +8,7 @@ const async = require('async');
 
 
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 2;
+var DIA_JOGO = 3;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -96,7 +96,8 @@ function crawl() {
                  !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
                   !linkLiga.includes("eurou19qual") && !linkLiga.includes("cup-italy1") && !linkLiga.includes("yleague") && !linkLiga.includes("cup-france2") &&
                   !linkLiga.includes("cup-spain2")  && !linkLiga.includes("cup-netherlands1") && !linkLiga.includes("cup-belgium1") &&
-                  !linkLiga.includes("cup-turkey1") && !linkLiga.includes("cup-england1")) {
+                  !linkLiga.includes("cup-turkey1") && !linkLiga.includes("cup-england1") && !linkLiga.includes("cup-spain1")  && !linkLiga.includes("cup-france1")
+                   && !linkLiga.includes("cup-spain1")) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var today = new Date()
                     today.setDate(today.getDate() + (DIA_JOGO-1));
@@ -437,6 +438,8 @@ function statsForAlgorithmSecondFase(game, next){
             next(game)
         }
     })
+    }else{
+        next(game)
     }
 }
 
