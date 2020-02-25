@@ -9,6 +9,10 @@ const async = require('async');
 
 var SITE_URL = "https://www.soccerstats.com/";
 var DIA_JOGO = 3;
+const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
+"euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
+"cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
+"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1"]
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -92,12 +96,7 @@ function crawl() {
                 var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
                 var linkLigaTrends = "";
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href
-                if (!linkLiga.includes("copalibertadores") && !linkLiga.includes("cleague") && !linkLiga.includes("uefa") && !linkLiga.includes("cup-england2") &&
-                 !linkLiga.includes("euroqualw") && !linkLiga.includes("euroqual") && !linkLiga.includes("eurou21qual") && !linkLiga.includes("fifaqualasia") &&
-                  !linkLiga.includes("eurou19qual") && !linkLiga.includes("cup-italy1") && !linkLiga.includes("yleague") && !linkLiga.includes("cup-france2") &&
-                  !linkLiga.includes("cup-spain2")  && !linkLiga.includes("cup-netherlands1") && !linkLiga.includes("cup-belgium1") &&
-                  !linkLiga.includes("cup-turkey1") && !linkLiga.includes("cup-england1") && !linkLiga.includes("cup-spain1")  && !linkLiga.includes("cup-france1")
-                   && !linkLiga.includes("cup-spain1")) {
+                if (!LEAGUES_TO_IGNORE.includes(linkLiga.split('=')[1])) {
                     linkLigaTrends = linkLiga.replace("latest", "trends");
                     var today = new Date()
                     today.setDate(today.getDate() + (DIA_JOGO-1));
@@ -132,6 +131,8 @@ function crawl() {
             debugger;
             //if err faz merdas
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
+            console.log("FINITOO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
         })
     });
 }
@@ -410,7 +411,8 @@ function aplicarALgoritmo (game, next) {
 }
 
 function statsForAlgorithmSecondFase(game, next){
-    if(game.gameStatshref!=undefined){
+    if(game.gameStatshref!=undefined  && game.gameStatshref
+        !='pmatch.asp?league=jamaica&stats=82-12-2-2020-molynes-united--vere-united-fc'){
     console.log("GOing to visit:"+SITE_URL + game.gameStatshref)
     visitPage(SITE_URL + game.gameStatshref, game, function (game, body) {
         if (body.toString().includes("ECONNRESET") || body.toString().includes("Error")) {
@@ -419,12 +421,30 @@ function statsForAlgorithmSecondFase(game, next){
         } else {
             // Parse the document body
             var $ = cheerio.load(body);
-
             //$('.five').text('Goals scored per match')
             //$('.five').text('Goals conceded per match')//$('.seven').text('Goals scored per match')[0].parent.parentNode.parentNode.children[1].childNodes[1].children[3].children[0].data
             //$('.trow3') 42 e 43
             //$(this).text().trim().includes('Home wins');
             //$('tr.trow3:contains("goals scored per match")')
+            //$('tr.trow3:contains("(in the league, most recent first)")').parent().siblings()[3].children[1].children[3]
+            //$('tr.trow3:contains("(in the league, most recent first)")').parent().siblings()[3].children[1].children[7]
+            try{
+            let game_result_games = $($('tr.trow3:contains("(in the league, most recent first)")').parent().siblings()[3]).children('tr')
+            let home_goals_scored = 0
+            let home_goals_conceded = 0
+            let away_goals_scored = 0
+            let away_goals_conceded = 0
+            for(var i = 0 ; i < 4; i ++){
+                home_goals_scored = home_goals_scored + parseInt(game_result_games[i].children[3].children[0].children[0].children[0].data.split('-')[0].trim())
+                home_goals_conceded = home_goals_conceded + parseInt(game_result_games[i].children[3].children[0].children[0].children[0].data.split('-')[1].trim())
+                away_goals_scored = away_goals_scored + parseInt(game_result_games[i].children[7].children[0].children[0].children[0].data.split('-')[0].trim())
+                away_goals_conceded = away_goals_conceded + parseInt(game_result_games[i].children[7].children[0].children[0].children[0].data.split('-')[1].trim())
+            }
+            game.goalsScoredLast4GamesHome = parseFloat(home_goals_scored/4).toFixed(2)
+            game.goalsConcededLast4GamesHome = parseFloat(home_goals_conceded/4).toFixed(2)
+            game.goalsScoredLast4GamesAway = parseFloat(away_goals_scored/4).toFixed(2)
+            game.goalsConcededLast4GamesAway = parseFloat(away_goals_conceded/4).toFixed(2)
+            debugger;
             try {
                 game.equipaCasa.goalsScoredPerMatchHome = parseFloat($('tr.trow3:contains("goals scored per match")')[0].childNodes[2].children[0].data.trim())
                 game.equipaFora.goalsScoredPerMatchAway = parseFloat($('tr.trow3:contains("goals scored per match")')[1].childNodes[2].children[0].data.trim())
@@ -435,12 +455,16 @@ function statsForAlgorithmSecondFase(game, next){
             }catch(e){
                 debugger;
             }
+        }catch(e){
+            game.goalsScoredPlusConceded= -1
+        }
             next(game)
         }
     })
     }else{
         next(game)
     }
+
 }
 
 function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga){

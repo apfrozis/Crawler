@@ -20,7 +20,10 @@ var gameModelSchema = new Schema({
   over35standardDeviation : String,
   gameStatshref: String,
   goalsScoredPlusConceded: String,
-
+  goalsScoredLast4GamesHome: String,
+  goalsConcededLast4GamesHome: String,
+  goalsScoredLast4GamesAway: String,
+  goalsConcededLast4GamesAway: String,
   gameHistory : {
     totalScore : String, 
     homeTotalGoals : String, 
