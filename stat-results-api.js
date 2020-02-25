@@ -2,6 +2,7 @@ require('dotenv').config(); // load configurations
 const Game = require('./structures/game');
 const Equipa = require('./structures/equipa');
 const League = require('./structures/league');
+const path = require('path');
 const async = require('async');
 
 console.log('process.env.DATABASE_URL : ', process.env.DATABASE_URL)
@@ -26,19 +27,11 @@ var GameModel = require('./data_layer/models/game');
 const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalayer.js');
 const _layer = new Database()
 
+const BASE_URL = process.env.BASE_URL || 'http://localhost';
+const PORT = process.env.PORT || 3000;
+const API =  process.env.API || '/api/v1';
 
 
-//example of save values
-setTimeout(function() {
-
-    console.log('save in the database...')
-    var modelToSave = {
-        username : "vitor viana",
-        password : "benfica"
-    }
-    _layer.abstractModel_save(modelToSave, () =>{});
-
-}, 1000 * 5)
 
 
 
@@ -49,13 +42,12 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 var app = express();
 
 var corsOptions = {
-    origin: 'http://localhost:4200',
+    origin: BASE_URL + ':' + PORT,
     optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
   }
 
-  app.options('*', cors()) 
-
-app.get('/getstats',cors(corsOptions), function (req, res) {
+app.options('*', cors()) 
+app.get(API + '/getstats',cors(corsOptions), function (req, res) {
 
     // req.query.search
 
@@ -113,16 +105,22 @@ app.get('/getstats',cors(corsOptions), function (req, res) {
 
 })
 
-app.get('/getdashboardmetrics',cors(corsOptions), function (req, res) {
+app.get(API + '/getdashboardmetrics',cors(corsOptions), function (req, res) {
     debugger;
     req.query.search === 'red'  // true
     console.log("recebeu request")
     response = res;
 })
 
+/**
+ * Serve statics files of site!
+ */
+app.use(express.static(path.join(__dirname, './frontend')));
+app.get('/', function (req, res) {
+  res.sendFile(path.join(__dirname, './frontend', 'index.html'));
+});
 
-
-var server = app.listen(8081, function () {
+var server = app.listen(PORT, function () {
    var host = server.address().address
    var port = server.address().port
    
