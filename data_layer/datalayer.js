@@ -270,7 +270,36 @@ Database.prototype = {
 		}
 
 
-	}
+	},
+	findAndUpdateOrCreateStatsLog : function(input,  next )
+	{
+		try
+		{
+		
+			var _stats =  Mongo.stats_game_logs(input);
+			//key is day + mounth + year
+			let date = new Date();
+			let key = ("0" + (date.getDay() + 1)).slice(-2) + ("0" + (date.getMonth() + 1)).slice(-2) + date.getFullYear() 
+			input.key = key;
+
+
+			Mongo.stats_game_logs.findOneAndUpdate(key,  input,{new: true, upsert: true }, (err, doc) => {
+				if (err) {
+					console.log("Something wrong when updating data!");
+					next(err, null);
+				}else{
+					console.log('Document saved with sucess ', doc);
+					next(null, doc);
+				}
+			});
+			
+		}
+		catch (err)
+		{
+			console.error('Error saving stats game logs ', err );
+			next(err, null)
+		}
+	},
     
 }
 var findAndUpdateGameForPrevious = async function(input, upsert_e)
@@ -310,6 +339,7 @@ var findAndUpdateGameForPrevious = async function(input, upsert_e)
 		console.error('Error saving model ', err );
 		next(err, null)
 	}
+	
 }
 
 

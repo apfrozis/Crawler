@@ -28,12 +28,6 @@ const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalaye
 const _layer = new Database()
 
 
-
-setTimeout(() => {
-    crawl(); 
-}, 1000*2);
-
-
 function crawl() {
 
     numeroJogosDoDia = 0;
@@ -198,3 +192,6 @@ function visitPage(url, game, callback) {
         }
     });
 }
+
+
+module.exports.gamesResults = crawl;

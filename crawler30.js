@@ -44,31 +44,14 @@ const _layer = new Database()
 
 
 
-//example of save values
-setTimeout(function() {
-
-    console.log('save in the database...')
-    var modelToSave = {
-        "href" : "trends.asp?league=argentina3",
-        "equipaCasa" : {
-            "nomeEquipa" : "Quilmes"
-        },
-        "equipaFora" : {
-            "nomeEquipa" : "Dep. Riestra"
-        },
-        "liga" : "Argentina - Primera Nacional Gr. B - benfica é o maior....."
-    }
-    //_layer.findAndUpdateGame(modelToSave, () =>{});
-
-}, 1000 * 5)
-
-
 
 
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-crawl();
+
+
+// crawl();
 
 function crawl() {
     numeroJogosDoDia = 0;
@@ -130,8 +113,20 @@ function crawl() {
         function (err){
             debugger;
             //if err faz merdas
+            //TODO Aplicar aqui uma chamada a uma tabela de resultados...
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
             console.log("FINITOO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            /** Correu tudo vou guardar as estatisticas na bd */
+            let object = {
+                alg_date : new Date(),
+                alg_total_analisados : listaJogosAnalisados.length,
+                alg_total_passaram : listaJogosCumpremCondicao.length
+            }
+            _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+                if(err){
+                    console.error('Erro a guardar as statics ', err)
+                }
+            })
 
         })
     });
@@ -523,3 +518,5 @@ function visitPage(url, game, callback) {
         }
     });
 }
+
+module.exports.games = crawl;
