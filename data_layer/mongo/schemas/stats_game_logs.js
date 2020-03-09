@@ -15,6 +15,6 @@ const GameLogSchema = new Schema({
 	},
 
 },
-{ collection: 'stats_game_log', versionKey: false })
+{ collection: 'stats_game_log'})
 
 module.exports = GameLogSchema

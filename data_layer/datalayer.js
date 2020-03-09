@@ -279,11 +279,12 @@ Database.prototype = {
 			var _stats =  Mongo.stats_game_logs(input);
 			//key is day + mounth + year
 			let date = new Date();
+			// let key = '090920201'
 			let key = ("0" + (date.getDay() + 1)).slice(-2) + ("0" + (date.getMonth() + 1)).slice(-2) + date.getFullYear() 
 			input.key = key;
 
 
-			Mongo.stats_game_logs.findOneAndUpdate(key,  input,{new: true, upsert: true }, (err, doc) => {
+			Mongo.stats_game_logs.findOneAndUpdate({key: key},  input,{new: true, upsert: true }, (err, doc) => {
 				if (err) {
 					console.log("Something wrong when updating data!");
 					next(err, null);

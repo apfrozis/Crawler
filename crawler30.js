@@ -43,6 +43,21 @@ const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalaye
 const _layer = new Database()
 
 
+// setTimeout(function()
+// {
+//     let object = {
+//         alg_date : new Date(),
+//         alg_total_analisados : 99,
+//         alg_total_passaram : 19
+//     }
+//     console.log('Vai criar um novo estados do alg');
+//     _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+//         if(err){
+//             console.error('Erro a guardar as statics ', err)
+//         }
+//     })
+
+// }, 1000 * 3);
 
 
 
@@ -274,6 +289,7 @@ else{
             var over15 = $('td').filter(function() {
                 return $(this).text().trim().includes('Home wins');
               });
+            console.log('Over 15 is : ', over15, ' ');
               var over25 = $('td').filter(function() {
                 return $(this).text().trim().includes('Draws');
               });
