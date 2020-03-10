@@ -6,8 +6,12 @@ apps:
       NODE_ENV: development
       DATABASE_URL : 'mongodb://heroku_6b7t2wg0:jo3rl5r1o5n5c5ltcfrt01ljud@ds345028.mlab.com:45028/heroku_6b7t2wg0'
       BASE_URL : 'http://localhost'
-      PORT : '3000'
+      PORT : '5000'
       API : '/api/v1'
       RUN_MINUTE : '30'
       GAMES_RUN_HOUR : '04'
       RESULTS_RUN_HOUR : '05'
+    env_production:
+      NODE_ENV: production
+      DATABASE_URL : ''
+      RUN_MINUTE : '40'
