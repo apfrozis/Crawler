@@ -1,0 +1,5 @@
+apps:
+  - script: './server.js'
+    name: 'CRAWLER_SITE'
+    error_file: /root/.pm2/logs/err.log
+    out_file: /root/.pm2/logs/out.log

@@ -112,9 +112,9 @@ function crawl() {
             //No final vou guardar para indicar que o processo dos resultados correu bem.
             /** Correu tudo vou guardar as estatisticas na bd */
             let object = {
-                alg_date : new Date(),
-                alg_total_analisados : listaJogosAnalisados.length,
-                alg_total_passaram : listaJogosCumpremCondicao.length
+                results_date : new Date(),
+                results_analisados : (i/2),
+                results_passaram : listaJogosCumpremCondicao.length
             }
             _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
                 if(err){

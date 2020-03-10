@@ -4,6 +4,7 @@ const Equipa = require('./structures/equipa');
 const League = require('./structures/league');
 const path = require('path');
 const async = require('async');
+const cronJobs = require('./runnable')
 
 console.log('process.env.DATABASE_URL : ', process.env.DATABASE_URL)
 
