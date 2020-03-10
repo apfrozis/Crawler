@@ -3,7 +3,7 @@
 
 
 #build da image
-docker build --no-cache -t registry2.wallid.io/base/nodejs-dev-tools:v1 .
+docker build --no-cache -t registry2.wallid.io/base/nodejs-dev-tools:v2 .
 
 
 #push no docker registry
@@ -11,4 +11,4 @@ docker push registry2.wallid.io/base/nodejs-dev-tools:v1
 
 
 #
-docker run -it --name run_crawler -p 3000:9000 registry2.wallid.io/base/nodejs-dev-tools:v1
+docker run -it --name run_crawler -p 3000:9000 registry2.wallid.io/base/nodejs-dev-tools:v2
