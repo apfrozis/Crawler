@@ -8,11 +8,12 @@ const async = require('async');
 
 
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 3;
+var DIA_JOGO = 1;
 const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
 "euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
 "cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
-"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1"]
+"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1",
+"cup-denmark1","cup-czechrepublic1"]
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -128,6 +129,11 @@ function crawl() {
                 }
         },
         function (err){
+            console.log("Numero de jogos analisados:" + numeroJogosDoDiaAnalisados)
+            console.log("Numero de lista de jogos com resultados:" + listaJogosAnalisados.length)
+            console.log("Numero de jogos com resposta com erro:" + numeroDeJogosComRespostaComErro)
+            console.log("Numero de jogos com resposta com liga nao suportada:" + numeroDeJogosComLigaNaoSuportada)
+            console.log("Numero de jogos :" + numeroJogosDoDia)
             debugger;
             //if err faz merdas
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
@@ -294,9 +300,7 @@ else{
               }
 try{
             game.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
-}catch(e){
-    debugger;
-}
+
             league.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
             listaLigas.push(league)
 
@@ -308,6 +312,9 @@ try{
             aplicarALgoritmo(game,function(err, data){
                 next()
             })
+        }catch(e){
+            numeroDeJogosComRespostaComErro += 1
+            next()        }
         }
 
     });
