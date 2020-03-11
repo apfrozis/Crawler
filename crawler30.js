@@ -317,10 +317,7 @@ try{
             game.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
             league.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
 
-}catch(e){
-    // debugger;
-    console.log('Erro ao correr isto....')
-}
+
             listaLigas.push(league)
 
             //problema - páginas como brazil 2 tem mais detalhes
