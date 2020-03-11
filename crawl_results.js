@@ -28,12 +28,6 @@ const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalaye
 const _layer = new Database()
 
 
-
-setTimeout(() => {
-    crawl(); 
-}, 1000*2);
-
-
 function crawl() {
 
     numeroJogosDoDia = 0;
@@ -115,6 +109,18 @@ function crawl() {
         function (err){
             //if err faz merdas
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
+            //No final vou guardar para indicar que o processo dos resultados correu bem.
+            /** Correu tudo vou guardar as estatisticas na bd */
+            let object = {
+                results_date : new Date(),
+                results_analisados : (i/2),
+                results_passaram : listaJogosCumpremCondicao.length
+            }
+            _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+                if(err){
+                    console.error('Erro a guardar as statics ', err)
+                }
+            })
         })
     });
 }
@@ -198,3 +204,6 @@ function visitPage(url, game, callback) {
         }
     });
 }
+
+
+module.exports.gamesResults = crawl;

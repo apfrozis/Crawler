@@ -12,8 +12,12 @@ var DIA_JOGO = 1;
 const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
 "euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
 "cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
+<<<<<<< HEAD
 "cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1",
 "cup-denmark1","cup-czechrepublic1"]
+=======
+"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1", "cup-ukraine1"]
+>>>>>>> a22d57807319e126a21aa822ab3734264a4fc042
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
@@ -44,32 +48,30 @@ const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalaye
 const _layer = new Database()
 
 
+// setTimeout(function()
+// {
+//     let object = {
+//         alg_date : new Date(),
+//         alg_total_analisados : 99,
+//         alg_total_passaram : 19
+//     }
+//     console.log('Vai criar um novo estados do alg');
+//     _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+//         if(err){
+//             console.error('Erro a guardar as statics ', err)
+//         }
+//     })
 
-//example of save values
-setTimeout(function() {
-
-    console.log('save in the database...')
-    var modelToSave = {
-        "href" : "trends.asp?league=argentina3",
-        "equipaCasa" : {
-            "nomeEquipa" : "Quilmes"
-        },
-        "equipaFora" : {
-            "nomeEquipa" : "Dep. Riestra"
-        },
-        "liga" : "Argentina - Primera Nacional Gr. B - benfica é o maior....."
-    }
-    //_layer.findAndUpdateGame(modelToSave, () =>{});
-
-}, 1000 * 5)
-
+// }, 1000 * 3);
 
 
 
 //Bind connection to error event (to get notification of connection errors)
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-crawl();
+
+
+// crawl();
 
 function crawl() {
     numeroJogosDoDia = 0;
@@ -136,8 +138,20 @@ function crawl() {
             console.log("Numero de jogos :" + numeroJogosDoDia)
             debugger;
             //if err faz merdas
+            //TODO Aplicar aqui uma chamada a uma tabela de resultados...
             console.log("Numero de jogos que passam as 3 condições:" + listaJogosCumpremCondicao.length)
             console.log("FINITOO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            /** Correu tudo vou guardar as estatisticas na bd */
+            let object = {
+                alg_date : new Date(),
+                alg_total_analisados : listaJogosAnalisados.length,
+                alg_total_passaram : listaJogosCumpremCondicao.length
+            }
+            _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+                if(err){
+                    console.error('Erro a guardar as statics ', err)
+                }
+            })
 
         })
     });
@@ -285,6 +299,7 @@ else{
             var over15 = $('td').filter(function() {
                 return $(this).text().trim().includes('Home wins');
               });
+            console.log('Over 15 is : ', over15, ' ');
               var over25 = $('td').filter(function() {
                 return $(this).text().trim().includes('Draws');
               });
@@ -300,8 +315,12 @@ else{
               }
 try{
             game.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
-
             league.ligaEstatisticas(over15.replace('%', '').trim(), over25.replace('%', '').trim(), over35.replace('%', '').trim());
+
+}catch(e){
+    // debugger;
+    console.log('Erro ao correr isto....')
+}
             listaLigas.push(league)
 
             //problema - páginas como brazil 2 tem mais detalhes
@@ -530,3 +549,5 @@ function visitPage(url, game, callback) {
         }
     });
 }
+
+module.exports.games = crawl;
