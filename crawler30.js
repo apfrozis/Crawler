@@ -12,12 +12,8 @@ var DIA_JOGO = 1;
 const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
 "euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
 "cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
-<<<<<<< HEAD
 "cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1",
-"cup-denmark1","cup-czechrepublic1"]
-=======
-"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1", "cup-ukraine1"]
->>>>>>> a22d57807319e126a21aa822ab3734264a4fc042
+"cup-denmark1","cup-czechrepublic1", "cup-ukraine1"]
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
