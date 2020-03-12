@@ -5,7 +5,7 @@ require('dotenv').config();
 let crawler = require('../crawler30');
 
 
-let delay = 1000 * 10;
+let delay = 1000 * 5;
 console.log('Vai correr o script para retirar os jogos em : ', delay);
 
 setTimeout(() => {
