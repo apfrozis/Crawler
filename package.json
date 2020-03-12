@@ -16,7 +16,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "run_games": "node tests/run-games.js",
+    "run_results": "node tests/run-results.js",
+    "start" : "node server.js"
   },
   "repository": {
     "type": "git",
