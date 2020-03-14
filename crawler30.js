@@ -109,13 +109,13 @@ function crawl() {
                         if(!game.gameStatshref.includes(game.equipaCasa.nomeEquipa.split(' ')[0].toLowerCase())){
                             game.gameStatshref = undefined
                         }
-                        i+=2;
                     }else{
                         game.gameStatshref = $(tableGames[i]).siblings().find('.button')[0].attribs.href
                     }
                 }catch {
                     numeroDeJogosComRespostaComErro += 1
-                    next()   
+                    i+=2;
+                    callback()   
                 }
                     //command
                     //$($('#content').find('.steam')).siblings().find('.button')
@@ -300,7 +300,7 @@ else{
             var over15 = $('td').filter(function() {
                 return $(this).text().trim().includes('Home wins');
               });
-            console.log('Over 15 is : ', over15, ' ');
+            // console.log('Over 15 is : ', over15, ' ');
               var over25 = $('td').filter(function() {
                 return $(this).text().trim().includes('Draws');
               });
@@ -520,7 +520,7 @@ function visitPage(url, game, callback) {
     console.log("Visiting page " + url);
     request(url, function (error, response, body) {
         // Check status code (200 is HTTP OK)
-        console.log("Received answer: " + response);
+        // console.log("Received answer: " + response);
         console.log("Error: " + error);
         if (error == null) {
 
