@@ -67,7 +67,7 @@ db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 
 
-// crawl();
+ //crawl();
 
 function crawl() {
     numeroJogosDoDia = 0;
@@ -101,7 +101,8 @@ function crawl() {
                     today.setDate(today.getDate() + (DIA_JOGO-1));
                     var game = new Game(tableGames[i].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[i + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
                     console.log("Vai iterar sobre o jogo ", game)
-                    if($(tableGames[i]).siblings().find('.button').length==0){
+                    try {
+                    if($(tableGames[i]).siblings().find('.button').length==0 && i == 0){
                             //$('tr:contains("Stats")')[0].children[2]
                             //$($('tr:contains("Stats")')[0]).css('rowspan','2')
                         game.gameStatshref = $($('tr:contains("Stats")')[0]).css('rowspan','2')[0].children[2].children[1].attribs.href
@@ -112,6 +113,10 @@ function crawl() {
                     }else{
                         game.gameStatshref = $(tableGames[i]).siblings().find('.button')[0].attribs.href
                     }
+                }catch {
+                    numeroDeJogosComRespostaComErro += 1
+                    next()   
+                }
                     //command
                     //$($('#content').find('.steam')).siblings().find('.button')
                     checkstatsGame(game, function(err, data){
