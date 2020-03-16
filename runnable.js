@@ -31,6 +31,8 @@ var rule = new schedule.RecurrenceRule();
 rule.minute = process.env.RUN_MINUTE;
  
 console.log('CRON JOB - Start to run at every ', rule.minute);
+console.log('CRON JOB - RUN games at', process.env.GAMES_RUN_HOUR * 1);
+console.log('CRON JOB - Run results at', process.env.RESULTS_RUN_HOUR * 1);
 var j = schedule.scheduleJob(rule, function(){
   let date = new Date();
   let hour = date.getUTCHours();

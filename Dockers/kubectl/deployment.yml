@@ -14,10 +14,18 @@ spec:
     spec:
       containers:
       - name: node-dev-tools
-        image: registry2.wallid.io/base/nodejs-dev-tools:v7
+        image: registry2.wallid.io/base/nodejs-dev-tools:v8
         env:
         - name: PORT
           value: '3000'
+        - name: RUN_MINUTE
+          value: '30'
+        - name: GAMES_RUN_HOUR
+          value: '04'
+        - name: RESULTS_RUN_HOUR
+          value: '05'
+        - name: DATABASE_URL
+          value: 'mongodb://heroku_6b7t2wg0:jo3rl5r1o5n5c5ltcfrt01ljud@ds345028.mlab.com:45028/heroku_6b7t2wg0'
         ports:
         - containerPort: 3000
       imagePullSecrets:
