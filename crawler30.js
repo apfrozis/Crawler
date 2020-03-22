@@ -76,6 +76,7 @@ function crawl() {
     numeroDeJogosComLigaNaoSuportada = 0;
     listaJogosAnalisados = [];
     listaJogosCumpremCondicao = [];
+    let errorLiga = false;
     // New page we haven't visited
     visitPage(START_URL, null, function (gameNull, body) {
         // Parse the document body
@@ -87,6 +88,7 @@ function crawl() {
         async.until(function(next){
             next(null,i>tableGames.length-2)
         }, function(callback){
+                errorLiga = false;
                 var $tableChild = $(tableGames[i]);
                 var $ligaElemento = $($tableChild.parent().prevAll('.parent'))
                 if ($ligaElemento.length == 0) {
@@ -115,14 +117,21 @@ function crawl() {
                 }catch {
                     numeroDeJogosComRespostaComErro += 1
                     i+=2;
-                    callback()   
+                    errorLiga = true;
                 }
-                    //command
-                    //$($('#content').find('.steam')).siblings().find('.button')
-                    checkstatsGame(game, function(err, data){
-                        i+=2;
-                        callback (err, data)
-                    });
+                    if(errorLiga){
+                        console.log("erro a tirar as estaticas do jogo ");
+                        callback()
+                    }
+                    else{
+                        //command
+                        //$($('#content').find('.steam')).siblings().find('.button')
+                        checkstatsGame(game, function(err, data){
+                            i+=2;
+                            callback (err, data)
+                        });
+                    }
+                    
                 }else{
                     i+=2;
                     console.log("Liga não suportada", linkLiga)
@@ -148,7 +157,9 @@ function crawl() {
                 alg_total_analisados : listaJogosAnalisados.length,
                 alg_total_passaram : listaJogosCumpremCondicao.length
             }
+            console.log('Vai guardar na bd as infos do alg ',object );
             _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
+                
                 if(err){
                     console.error('Erro a guardar as statics ', err)
                 }

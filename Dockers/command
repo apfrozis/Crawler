@@ -3,11 +3,11 @@
 
 
 #build da image
-docker build --no-cache -t registry2.wallid.io/base/nodejs-dev-tools:v8 .
+docker build --no-cache -t registry2.wallid.io/base/nodejs-dev-tools:v9 .
 
 
 #push no docker registry
-docker push registry2.wallid.io/base/nodejs-dev-tools:v8
+docker push registry2.wallid.io/base/nodejs-dev-tools:v9
 
 
 #

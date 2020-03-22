@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: node-dev-tools
-        image: registry2.wallid.io/base/nodejs-dev-tools:v8
+        image: registry2.wallid.io/base/nodejs-dev-tools:v9
         env:
         - name: PORT
           value: '3000'
