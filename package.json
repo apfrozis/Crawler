@@ -12,13 +12,14 @@
     "moment": "^2.24.0",
     "mongoose": "^5.9.4",
     "node-schedule": "^1.3.2",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "safe-navigator": "^1.1.2"
   },
   "devDependencies": {},
   "scripts": {
     "run_games": "node tests/run-games.js",
     "run_results": "node tests/run-results.js",
-    "start" : "node server.js"
+    "start": "node server.js"
   },
   "repository": {
     "type": "git",

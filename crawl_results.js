@@ -27,7 +27,7 @@ var mongoose = require('mongoose');
 const {Database,findAndUpdateGameForPrevious}  =  require('./data_layer/datalayer.js');
 const _layer = new Database()
 
-
+crawl();
 function crawl() {
 
     numeroJogosDoDia = 0;
@@ -57,8 +57,8 @@ function crawl() {
                 var nome_equipa_fora = tableGames[i+1].childNodes[0].data
                 var resultado = 0
                 try{
-                    var golos_equipa_casa = $(tableGames[i].nextSibling.nextSibling).find('b')[0].childNodes[0].data
-                    var golos_equipa_fora = $(tableGames[i+1].nextSibling.nextSibling).find('b')[0].childNodes[0].data
+                    var golos_equipa_casa = $(tableGames[i].nextSibling).find('b')[0].childNodes[0].data
+                    var golos_equipa_fora = $(tableGames[i+1].nextSibling).find('b')[0].childNodes[0].data
                     resultado = parseInt(golos_equipa_casa) + parseInt(golos_equipa_fora)
                 }catch(e){
                     resultado = "Ainda não existe resultado para o presente jogo"
@@ -116,6 +116,7 @@ function crawl() {
                 results_analisados : (i/2),
                 results_passaram : listaJogosCumpremCondicao.length
             }
+            debugger;
             _layer.findAndUpdateOrCreateStatsLog(object, (err, data) =>{
                 if(err){
                     console.error('Erro a guardar as statics ', err)

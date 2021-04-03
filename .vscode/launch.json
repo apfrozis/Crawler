@@ -4,12 +4,14 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
+
         {
             "type": "node",
             "request": "launch",
-            "name": "Launch Program",
-            //"program": "${workspaceFolder}/crawl_results.js"
-            "program": "${workspaceFolder}/crawler30.js"
+            "name": "Crawl games",
+            "program": "${workspaceFolder}/crawl_results.js"
+            //"program": "${workspaceFolder}/crawler_2021/crawler_2021.js"
             //"program": "${workspaceFolder}/run_results_for_old_games.js"
         }
     ]

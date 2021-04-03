@@ -17,12 +17,11 @@ class Equipa {
         this.totalMatchGoalOver35 = equipaInfo[5];
         this.totalMatchGoalOver45 = equipaInfo[6];
         this.totalMatchGoalOver55 = equipaInfo[7];
-        this.totalMatchGoalOver65 = equipaInfo[8];
-        this.totalMatchBothTeamScored = equipaInfo[9];
-        this.totalMatchTeamNotScored = equipaInfo[10];
-        this.totalMatchTeamNotConceded = equipaInfo[11];
-        this.totalMatchWonToNil = equipaInfo[12];
-        this.totalMatchLossToNil = equipaInfo[13];
+        this.totalMatchBothTeamScored = equipaInfo[8];
+        this.totalMatchTeamNotScored = equipaInfo[9];
+        this.totalMatchTeamNotConceded = equipaInfo[10];
+        this.totalMatchWonToNil = equipaInfo[11];
+        this.totalMatchLossToNil = equipaInfo[12];
     }
     informacaoCasa(equipaInfo) {
         this.homeMatchplayed = equipaInfo[0];
@@ -33,12 +32,11 @@ class Equipa {
         this.homeMatchGoalOver35 = equipaInfo[5];
         this.homeMatchGoalOver45 = equipaInfo[6];
         this.homeMatchGoalOver55 = equipaInfo[7];
-        this.homeMatchGoalOver65 = equipaInfo[8];
-        this.homeMatchBothTeamScored = equipaInfo[9];
-        this.homeMatchTeamNotScored = equipaInfo[10];
-        this.homeMatchTeamNotConceded = equipaInfo[11];
-        this.homeMatchWonToNil = equipaInfo[12];
-        this.homeMatchLossToNil = equipaInfo[13];
+        this.homeMatchBothTeamScored = equipaInfo[8];
+        this.homeMatchTeamNotScored = equipaInfo[9];
+        this.homeMatchTeamNotConceded = equipaInfo[10];
+        this.homeMatchWonToNil = equipaInfo[11];
+        this.homeMatchLossToNil = equipaInfo[12];
     }
 
     informacaoFora(equipaInfo) {
@@ -50,15 +48,11 @@ class Equipa {
         this.awayMatchGoalOver35 = equipaInfo[5];
         this.awayMatchGoalOver45 = equipaInfo[6];
         this.awayMatchGoalOver55 = equipaInfo[7];
-        this.awayMatchGoalOver65 = equipaInfo[8];
-        this.awayMatchBothTeamScored = equipaInfo[9];
-        this.awayMatchTeamNotScored = equipaInfo[10];
-        this.awayMatchTeamNotConceded = equipaInfo[11];
-        this.awayMatchWonToNil = equipaInfo[12];
-        this.awayMatchLossToNil = equipaInfo[13];
+        this.awayMatchBothTeamScored = equipaInfo[8];
+        this.awayMatchTeamNotScored = equipaInfo[9];
+        this.awayMatchTeamNotConceded = equipaInfo[10];
+        this.awayMatchWonToNil = equipaInfo[11];
+        this.awayMatchLossToNil = equipaInfo[12];
     }
 }
-
-// exports = Cat; // It will not work with `new Cat();`
-// exports.Cat = Cat; // It will require `new Cat.Cat();` to work (yuck!)
 module.exports = Equipa;
