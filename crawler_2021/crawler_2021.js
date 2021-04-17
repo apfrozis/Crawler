@@ -8,7 +8,7 @@ const crawler_requests = require('./crawler_requests')
 const game_statistics_methods = require('./game_statistics_methods')
  
 var SITE_URL = "https://www.soccerstats.com/";
-var DIA_JOGO = 2;
+var DIA_JOGO = 5;
 const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
 "euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
 "cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
@@ -43,6 +43,10 @@ function crawl() {
                 $ligaElemento = $($tableChild.parent().prevAll().find('.parent'))
             }
             var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + (safe($ligaElemento.find('font')[1], 'firstChild.data') || '');
+            var leagueGamesArray = (safe($ligaElemento.find('font')[1], 'firstChild.data') || '').split(' ');
+            var leagueNumberOfGamesPlayed = (leagueGamesArray[0] || 0);
+            var leagueNumberOfGames = (leagueGamesArray[leagueGamesArray.length-1] || 0);
+            var percentageOfGamesPlayedInLeague = leagueNumberOfGamesPlayed / leagueNumberOfGames;
             var linkLigaTrends = "";
             var linkLiga = $ligaElemento.find('a')[0].attribs.href
             if (!LEAGUES_TO_IGNORE.includes(linkLiga.split('=')[1]) && !linkLiga.includes('cup') && !linkLiga.includes('fifa') && !linkLiga.includes('friend') && !linkLiga.includes('euro') && !linkLiga.includes('cleague')) {
@@ -50,7 +54,9 @@ function crawl() {
                 var today = new Date()
                 today.setDate(today.getDate() + (DIA_JOGO-1));
                 var game = new Game(tableGames[all_games_index].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), tableGames[all_games_index + 1].childNodes[0].data.replace(/(\r\n|\n|\r)/gm, ""), nomeLiga, linkLigaTrends,today)
-
+                game.leagueNumberOfGamesPlayed = leagueNumberOfGamesPlayed
+                game.leagueNumberOfGames = leagueNumberOfGames
+                game.percentageOfGamesPlayedInLeague = percentageOfGamesPlayedInLeague
                 try {
                 game.gameStatshref = $('td[rowspan=2]').find('.vsmall')[all_games_with_game_page_index].attribs.href
                 all_games_with_game_page_index += 1

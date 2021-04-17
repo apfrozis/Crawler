@@ -10,6 +10,12 @@ var DIA_JOGO = 0;
 var PAGE_URL = "matches.asp?matchday="+DIA_JOGO;
 var START_URL = SITE_URL + PAGE_URL;
 
+const LEAGUES_TO_IGNORE = ["copalibertadores","cleague","uefa","cup-england2","euroqualw",
+"euroqual","eurou21qual","fifaqualasia","eurou19qual","cup-italy1","yleague","cup-france2",
+"cup-spain2","cup-netherlands1","cup-belgium1","cup-turkey1","cup-england1","cup-spain1",
+"cup-france1","cup-germany1","cup-portugal1", "cleague","afcchamp", "cup-cyprus1","cup-greece1",
+"cup-denmark1","cup-czechrepublic1", "cup-ukraine1", "fifaqual"]
+
 //muda isto seu sacana....
 var HREF = "trends.asp?league=egypt";
 
@@ -49,62 +55,67 @@ function crawl() {
                 if ($ligaElemento.length == 0) {
                     $ligaElemento = $($tableChild.parent().prevAll().find('.parent'))
                 }
-                var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data + $ligaElemento.find('font')[1].firstChild.data;
                 var linkLiga = $ligaElemento.find('a')[0].attribs.href.replace("latest", "trends");
-                var today = new Date()
-                today.setDate(today.getDate() + (DIA_JOGO-1));
-                var nome_equipa_casa = tableGames[i].childNodes[0].data
-                var nome_equipa_fora = tableGames[i+1].childNodes[0].data
-                var resultado = 0
-                try{
-                    var golos_equipa_casa = $(tableGames[i].nextSibling).find('b')[0].childNodes[0].data
-                    var golos_equipa_fora = $(tableGames[i+1].nextSibling).find('b')[0].childNodes[0].data
-                    resultado = parseInt(golos_equipa_casa) + parseInt(golos_equipa_fora)
-                }catch(e){
-                    resultado = "Ainda não existe resultado para o presente jogo"
-                }
-
-                 //todo vviama
-                 /*
-                 1. Find do game pela key
-                 2. calcular satisfaç\ao das condi~\oes de acordo com o resultado
-                 3. guardar na bd
-                 */
-
-
-                var game = {
-                    gameDate: today,
-                    equipaCasa : {
-                        nomeEquipa : nome_equipa_casa
-                    },
-                    equipaFora : {
-                        nomeEquipa : nome_equipa_fora
-                    },
-                    href : linkLiga,
-                    gameDate : today,
-                    gameHistory : {
-                        totalScore : resultado,
-                        homeTotalGoals : golos_equipa_casa,
-                        awayTotalGoals : golos_equipa_fora,
-                    }
-
-                }
-
-                //vai a db buscar o jogo pela key e depois vou preencher
-                // se 
-                findGameSavedAndSetResult(game, (err, data ) => 
-                {
-                    console.log("Liga:", nomeLiga)
-                    console.log("Date:", today)
-                    console.log("Result:" + resultado)
+                if (LEAGUES_TO_IGNORE.includes(linkLiga.split('=')[1]) || linkLiga.includes('cup') || linkLiga.includes('fifa') || linkLiga.includes('friend') || linkLiga.includes('euro') || linkLiga.includes('cleague')) {
                     i+=2;
                     callback ()
+                } else {
 
-                });
-            
+                    if ($ligaElemento.find('font')[1] == undefined) {
+                        debugger
+                    }
+                    var nomeLiga = $ligaElemento.find('font')[0].childNodes[0].data;
+                    var today = new Date()
+                    today.setDate(today.getDate() + (DIA_JOGO-1));
+                    var nome_equipa_casa = tableGames[i].childNodes[0].data
+                    var nome_equipa_fora = tableGames[i+1].childNodes[0].data
+                    var resultado = 0
+                    try{
+                        var golos_equipa_casa = $(tableGames[i].nextSibling).find('b')[0].childNodes[0].data
+                        var golos_equipa_fora = $(tableGames[i+1].nextSibling).find('b')[0].childNodes[0].data
+                        resultado = parseInt(golos_equipa_casa) + parseInt(golos_equipa_fora)
+                    }catch(e){
+                        resultado = "Ainda não existe resultado para o presente jogo"
+                    }
 
-               
+                    //todo vviama
+                    /*
+                    1. Find do game pela key
+                    2. calcular satisfaç\ao das condi~\oes de acordo com o resultado
+                    3. guardar na bd
+                    */
 
+
+                    var game = {
+                        gameDate: today,
+                        equipaCasa : {
+                            nomeEquipa : nome_equipa_casa
+                        },
+                        equipaFora : {
+                            nomeEquipa : nome_equipa_fora
+                        },
+                        href : linkLiga,
+                        gameDate : today,
+                        gameHistory : {
+                            totalScore : resultado,
+                            homeTotalGoals : golos_equipa_casa,
+                            awayTotalGoals : golos_equipa_fora,
+                        }
+
+                    }
+
+                    //vai a db buscar o jogo pela key e depois vou preencher
+                    // se 
+                    findGameSavedAndSetResult(game, (err, data ) => 
+                    {
+                        console.log("Liga:", nomeLiga)
+                        console.log("Date:", today)
+                        console.log("Result:" + resultado)
+                        i+=2;
+                        callback ()
+
+                    });
+                }
         },
         function (err){
             //if err faz merdas

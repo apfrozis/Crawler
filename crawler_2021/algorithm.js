@@ -40,18 +40,12 @@ function aplicarALgoritmo (game, next) {
     equipaForaForaOver35 = game.equipaFora.awayMatchGoalOver35
     mediaLiga35 = game.over35
     let over35Teste = algoritmoFantastico(game, equipaCasaLigaOver35,equipaForaLigaOver35,equipaCasaCasaOver35,equipaForaForaOver35,mediaLiga35)
-    if(over15Teste['teste']=='Passou'){
-        game.over15validation = over15Teste['teste'];
-        game.over15standardDeviation = over15Teste['desvioPadrao'];
-    }
-    if(over25Teste['teste']=='Passou'){
-        game.over25validation = over25Teste['teste'];
-        game.over25standardDeviation = over25Teste['desvioPadrao'];
-    }
-    if(over35Teste['teste']=='Passou'){
-        game.over35validation = over35Teste['teste'];
-        game.over35standardDeviation = over35Teste['desvioPadrao'];
-    }
+    game.over15validation = over15Teste['teste'];
+    game.over15standardDeviation = over15Teste['desvioPadrao'];
+    game.over25validation = over25Teste['teste'];
+    game.over25standardDeviation = over25Teste['desvioPadrao'];
+    game.over35validation = over35Teste['teste'];
+    game.over35standardDeviation = over35Teste['desvioPadrao'];
     
     //todo
     statsForAlgorithmSecondFase(game, function(updatedGame){
@@ -114,7 +108,7 @@ function statsForAlgorithmSecondFase(game, next){
     }
 
 }
-aplicarALgoritmo
+
 function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,equipaForaFora,mediaLiga) {
     let condicao1 = false;
     let condicao2 = false;
@@ -131,12 +125,12 @@ function algoritmoFantastico(game, equipaCasaLiga,equipaForaLiga,equipaCasaCasa,
     if (parseInt(equipaForaFora) >= parseInt(mediaLiga)) {
         condicao3 = true;
     }
+    let mediaEquipas = parseInt((parseInt(equipaCasaLiga) + parseInt(equipaCasaCasa) + parseInt(equipaForaLiga) + parseInt(equipaForaFora))/4);
+    let desvioPadrao = mediaEquipas - parseInt(mediaLiga);
     if (condicao1 == true && condicao2 == true && condicao3 == true) {
-        let mediaEquipas = parseInt((parseInt(equipaCasaLiga) + parseInt(equipaCasaCasa) + parseInt(equipaForaLiga) + parseInt(equipaForaFora))/4);
-        let desvioPadrao = mediaEquipas - parseInt(mediaLiga);
-        return {teste: 'Passou', desvioPadrao: desvioPadrao}
+        return {teste: true, desvioPadrao: desvioPadrao}
     }
-    return {teste: 'Não passou'}
+    return {teste: false, desvioPadrao: desvioPadrao}
 }
 
 module.exports = { aplicarALgoritmo };
